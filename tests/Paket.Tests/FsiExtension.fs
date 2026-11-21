@@ -394,3 +394,88 @@ module FsiExtension =
         let upperCase = inRoot [ "HOME"; ".nuget"; "packages" ]
         Assert.AreEqual(1, List.length (paketFolders true (Some upperCase) (inRoot [ "home" ])))
         Assert.AreEqual(2, List.length (paketFolders false (Some upperCase) (inRoot [ "home" ])))
+
+    /// The Paket that choosePaket picks, the warnings it gives and the lookups it makes, with
+    /// ~/.paket/paket as the global tool of ~/.paket
+    let choosePaket localTool toolPathExe globalTool restoredTool =
+        let warnings = ResizeArray()
+        let lookups = ResizeArray()
+        let paket =
+            ReferenceLoading.Internals.Logic.choosePaket
+                warnings.Add
+                localTool
+                toolPathExe
+                (fun paketExe -> paketExe = "~/.paket/paket")
+                (fun () -> lookups.Add "global tool"; globalTool)
+                (fun () -> lookups.Add "restored tool"; restoredTool)
+        paket, List.ofSeq warnings, List.ofSeq lookups
+
+    let manifest = "/repo/.config/dotnet-tools.json"
+    let notRestored = "Paket 12.0.0, the local tool of '/repo/.config/dotnet-tools.json', is not restored. Please run 'dotnet tool restore' in '/repo'."
+
+    [<Test>]
+    let ``without a manifest that declares paket, a paket installed with --tool-path runs, else a global tool, else the most recent one restored`` () =
+        let exe = ReferenceLoading.Internals.Logic.PaketExe
+        let dll = ReferenceLoading.Internals.Logic.PaketDll
+        Assert.AreEqual((Some (exe "/repo/.paket/paket"), List.empty<string>, List.empty<string>), choosePaket None (Some "/repo/.paket/paket") (Some "~/.dotnet/tools/paket") (Some "/restored/paket.dll"))
+        Assert.AreEqual((Some (exe "~/.paket/paket"), List.empty<string>, List.empty<string>), choosePaket None (Some "~/.paket/paket") None None)
+        Assert.AreEqual((Some (exe "~/.dotnet/tools/paket"), List.empty<string>, [ "global tool" ]), choosePaket None None (Some "~/.dotnet/tools/paket") (Some "/restored/paket.dll"))
+        Assert.AreEqual((Some (dll "/restored/paket.dll"), List.empty<string>, [ "global tool"; "restored tool" ]), choosePaket None None None (Some "/restored/paket.dll"))
+        Assert.AreEqual((None, List.empty<string>, [ "global tool"; "restored tool" ]), choosePaket None None None None)
+
+    [<Test>]
+    let ``the restored local tool runs instead of a paket installed with --tool-path, with a warning unless it is the global tool of ~/.paket`` () =
+        let localTool = Some (manifest, Ok "/local/paket.dll")
+        let dll = ReferenceLoading.Internals.Logic.PaketDll
+        Assert.AreEqual(
+            (Some (dll "/local/paket.dll"),
+             [ "Ignoring /repo/.paket/paket: '/repo/.config/dotnet-tools.json' declares paket, which runs instead. Delete it if it is an older Paket, such as the paket.exe or bootstrapper of Paket 11." ],
+             List.empty<string>),
+            choosePaket localTool (Some "/repo/.paket/paket") (Some "~/.dotnet/tools/paket") (Some "/restored/paket.dll"))
+        Assert.AreEqual((Some (dll "/local/paket.dll"), List.empty<string>, List.empty<string>), choosePaket localTool (Some "~/.paket/paket") None None)
+        Assert.AreEqual((Some (dll "/local/paket.dll"), List.empty<string>, List.empty<string>), choosePaket localTool None None None)
+
+    [<Test>]
+    let ``when the local tool isn't restored, a global tool runs, else the most recent one restored, with a warning, and a paket installed with --tool-path is still skipped`` () =
+        let localTool = Some (manifest, Error notRestored)
+        let skipped = "Ignoring /repo/.paket/paket: '/repo/.config/dotnet-tools.json' declares paket. Delete it if it is an older Paket, such as the paket.exe or bootstrapper of Paket 11."
+        Assert.AreEqual(
+            (Some (ReferenceLoading.Internals.Logic.PaketExe "~/.dotnet/tools/paket"),
+             [ skipped; notRestored + " Running a global tool instead, which may be another version." ],
+             [ "global tool" ]),
+            choosePaket localTool (Some "/repo/.paket/paket") (Some "~/.dotnet/tools/paket") (Some "/restored/paket.dll"))
+        // the global tool of ~/.paket, which the walk up from a script in the home folder finds too
+        Assert.AreEqual(
+            (Some (ReferenceLoading.Internals.Logic.PaketExe "~/.paket/paket"),
+             [ notRestored + " Running a global tool instead, which may be another version." ],
+             [ "global tool" ]),
+            choosePaket localTool (Some "~/.paket/paket") (Some "~/.paket/paket") (Some "/restored/paket.dll"))
+        Assert.AreEqual(
+            (Some (ReferenceLoading.Internals.Logic.PaketDll "/restored/paket.dll"),
+             [ notRestored + " Running the most recent Paket .NET tool restored instead, which may be another version." ],
+             [ "global tool"; "restored tool" ]),
+            choosePaket localTool None None (Some "/restored/paket.dll"))
+        Assert.AreEqual((None, [ skipped ], [ "global tool"; "restored tool" ]), choosePaket localTool (Some "/repo/.paket/paket") None None)
+
+    [<Test>]
+    let ``when no paket is found, the error asks to restore the local tool, or else gives the locations looked in, if any`` () =
+        let paketNotFound = ReferenceLoading.Internals.Logic.paketNotFound
+        Assert.AreEqual(notRestored, paketNotFound (Some notRestored) "/repo" [ "~/.dotnet/tools/paket" ])
+        Assert.AreEqual(
+            "Paket was not found in '/repo' or a parent directory, as a local tool, or in those locations:\n\n - ~/.dotnet/tools/paket"
+            + System.Environment.NewLine
+            + " - ~/.nuget/packages/paket\n\nPlease install the Paket .NET tool: dotnet tool install paket",
+            paketNotFound None "/repo" [ "~/.dotnet/tools/paket"; "~/.nuget/packages/paket" ])
+        Assert.AreEqual(
+            "Paket was not found in '/repo' or a parent directory, as a local tool.\n\nPlease install the Paket .NET tool: dotnet tool install paket",
+            paketNotFound None "/repo" [])
+
+    [<Test>]
+    let ``a global tool is looked for in ~/.dotnet/tools and then ~/.paket, and not without a user profile`` () =
+        let globalToolPaths = ReferenceLoading.Internals.Logic.globalToolPaths
+        Assert.AreEqual(
+            [ inRoot [ "home"; ".dotnet"; "tools"; "paket" ]; inRoot [ "home"; ".paket"; "paket" ] ],
+            globalToolPaths "paket" (inRoot [ "home" ]))
+        Assert.AreEqual(List.empty<string>, globalToolPaths "paket" null)
+        // not in the current folder
+        Assert.AreEqual(List.empty<string>, globalToolPaths "paket" "")

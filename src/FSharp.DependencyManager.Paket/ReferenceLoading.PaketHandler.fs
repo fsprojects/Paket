@@ -271,6 +271,83 @@ module Logic =
         // 10 1909, where the SDK doesn't switch its output to UTF-8
         |> Option.filter (fun folder -> folder.IndexOf '\uFFFD' < 0 && System.IO.Path.IsPathRooted folder)
 
+    /// Where a global tool of paket is, in ~/.dotnet/tools and then ~/.paket. None without a user profile,
+    /// and not relative to the current folder when HOME is empty. A path with characters that .NET Framework
+    /// refuses in a path, such as quotes, is left out.
+    let globalToolPaths (executable: string) (userProfile: string) =
+        if System.String.IsNullOrEmpty userProfile then [] else
+        [ [| userProfile; ".dotnet"; "tools"; executable |]
+          [| userProfile; ".paket"; executable |] ]
+        |> List.choose (fun parts -> try Some(System.IO.Path.Combine parts) with _ -> None)
+
+    /// The error when #r "paket:" finds no Paket: the message that the local tool isn't restored, when the
+    /// manifest declares paket, or else that Paket wasn't found, with the locations looked in, if any. There
+    /// is none without a user profile, NUGET_PACKAGES or a dotnet that tells the NuGet packages folder.
+    let paketNotFound (notRestored: string option) (scriptDir: string) (locations: string list) =
+        match notRestored with
+        | Some notRestored -> notRestored
+        | None ->
+        let locations =
+            match locations with
+            | [] -> "."
+            | locations ->
+                ", or in those locations:\n\n"
+                + (locations |> List.map (fun location -> " - " + location) |> String.concat System.Environment.NewLine)
+        $"Paket was not found in '%s{scriptDir}' or a parent directory, as a local tool%s{locations}\n\nPlease install the Paket .NET tool: dotnet tool install paket"
+
+    /// The Paket that #r "paket:" runs
+    type PaketToRun =
+        /// an executable: Paket installed with --tool-path, or a global tool
+        | PaketExe of string
+        /// a paket.dll that dotnet runs: the local tool, or the most recent Paket .NET tool restored
+        | PaketDll of string
+
+    /// The Paket that #r "paket:" runs, or None when there is none, with the warnings it gives on the way.
+    /// localTool is the manifest that declares paket, with the paket.dll of its local tool or else the
+    /// message that it isn't restored. A Paket installed with --tool-path only runs without such a
+    /// manifest, as in the targets: it can be an older Paket, such as the paket.exe or bootstrapper of
+    /// Paket 11, and a warning says that it is skipped, unless it is the global tool of ~/.paket. When the
+    /// local tool isn't restored, a global tool still runs, or else the most recent Paket .NET tool
+    /// restored, with a warning that it may be another version. globalTool and restoredTool are only
+    /// looked for when needed, in that order.
+    let choosePaket
+            (warn: string -> unit)
+            (localTool: (string * Result<string, string>) option)
+            (toolPathExe: string option)
+            (isGlobalToolPath: string -> bool)
+            (globalTool: unit -> string option)
+            (restoredTool: unit -> string option) =
+        match localTool, toolPathExe with
+        | None, Some paketExe -> Some (PaketExe paketExe)
+        | _ ->
+
+        match localTool, toolPathExe with
+        | Some (manifest, paketDll), Some paketExe when not (isGlobalToolPath paketExe) ->
+            // when the local tool isn't restored, the next warning tells what runs instead, or else the error asks
+            // to restore it
+            let runsInstead = match paketDll with Ok _ -> ", which runs instead" | Error _ -> ""
+            warn $"Ignoring %s{paketExe}: '%s{manifest}' declares paket%s{runsInstead}. Delete it if it is an older Paket, such as the paket.exe or bootstrapper of Paket 11."
+        | _ -> ()
+
+        match localTool with
+        | Some (_, Ok paketDll) -> Some (PaketDll paketDll)
+        | _ ->
+
+        let insteadOfLocalTool (paket: string) =
+            match localTool with
+            | Some (_, Error notRestored) -> warn $"%s{notRestored} Running %s{paket} instead, which may be another version."
+            | _ -> ()
+        match globalTool () with
+        | Some paketExe ->
+            insteadOfLocalTool "a global tool"
+            Some (PaketExe paketExe)
+        | None ->
+        match restoredTool () with
+        | Some paketDll ->
+            insteadOfLocalTool "the most recent Paket .NET tool restored"
+            Some (PaketDll paketDll)
+        | None -> None
+
 namespace ReferenceLoading
 module internal PaketHandler =
 
@@ -594,30 +671,21 @@ module internal PaketHandler =
         then 
             (loadScript,additionalIncludeFolders())
         else 
-            let toolPath, toolArguments =
-                let localTool = findLocalTool (DirectoryInfo scriptDir)
-                // we try to resolve paket installed with --tool-path any place up in the folder structure from current script
-                let toolPathExe =
-                    match findPaketExe prioritizedSearchPaths (DirectoryInfo scriptDir), localTool with
-                    // a global tool comes after the local tool, without a warning
-                    | Some paketExe, Some _ when isGlobalToolPath paketExe -> None
-                    // as in the targets, the local tool runs instead: it can be an older Paket, such as the paket.exe or bootstrapper of Paket 11
-                    | Some paketExe, Some (manifest, _, _) ->
-                        Console.ForegroundColor <- ConsoleColor.Yellow
-                        Console.Write ":paket>"
-                        Console.ResetColor()
-                        Console.WriteLine $" Ignoring %s{paketExe}: '%s{manifest}' declares paket, which runs instead. Delete it if it is an older Paket, such as the paket.exe or bootstrapper of Paket 11."
-                        None
-                    | paketExe, _ -> paketExe
-
-                match toolPathExe with
-                | Some paketExe -> paketExe, ""
-                | None ->
-
-                match localTool with
-                | Some (manifest, version, manifestFolder) ->
+            // a line after the :paket> prefix, with only the prefix in that color
+            let writeLine (color: ConsoleColor) (message: string) =
+                Console.ForegroundColor <- color
+                Console.Write ":paket>"
+                Console.ResetColor()
+                Console.WriteLine(" " + message)
+            let warn = writeLine ConsoleColor.Yellow
+            // the manifest that declares paket, with the paket.dll of its local tool or else the message that
+            // it isn't restored
+            let localTool =
+                findLocalTool (DirectoryInfo scriptDir)
+                |> Option.map (fun (manifest, version, manifestFolder) ->
+                    manifest,
                     match paketDllOfToolResolverCache version with
-                    | Some paketDll -> dotnetCommand paketDll
+                    | Some paketDll -> Ok paketDll
                     | None ->
                     // else where `dotnet tool restore` restores it when run in the folder of the manifest, or
                     // where it was restored with another dotnet home folder
@@ -626,54 +694,53 @@ module internal PaketHandler =
                         |> List.map (fun paketFolder -> Path.Combine(paketFolder, version.ToLowerInvariant()))
                     // a folder that can't be read doesn't stop the lookup in the next one
                     match versionFolders |> List.tryPick (fun folder -> try tryFindToolDll (DirectoryInfo folder) with _ -> None) with
-                    | Some paketDll -> dotnetCommand paketDll
+                    | Some paketDll -> Ok paketDll
                     | None ->
                         let notRestoredIn =
                             match versionFolders with
                             | [] -> ""
                             | folders -> " in " + (folders |> List.map (fun folder -> $"'%s{folder}'") |> String.concat " or ")
-                        failwith $"Paket %s{version}, the local tool of '%s{manifest}', is not restored%s{notRestoredIn}. Please run 'dotnet tool restore' in '%s{manifestFolder}'."
+                        Error $"Paket %s{version}, the local tool of '%s{manifest}', is not restored%s{notRestoredIn}. Please run 'dotnet tool restore' in '%s{manifestFolder}'.")
+
+            // the message that the local tool isn't restored, which the errors of a paket that runs in its place
+            // repeat: it may be another version, which only a warning told
+            let notRestoredLocalTool = match localTool with Some (_, Error notRestored) -> Some notRestored | _ -> None
+            let withLocalToolHint (message: string) =
+                match notRestoredLocalTool with
+                | Some notRestored -> message + Environment.NewLine + notRestored
+                | None -> message
+
+            // we try to resolve paket installed with --tool-path any place up in the folder structure from current script
+            let toolPathExe = findPaketExe prioritizedSearchPaths (DirectoryInfo scriptDir)
+
+            let globalTools = Internals.Logic.globalToolPaths toolPathExecutable userProfile
+
+            let paketFolders = lazy (paketFoldersOfNuGetPackages scriptDir)
+            // the newest Paket .NET tool restored in the NuGet packages folders
+            let restoredTool () =
+                paketFolders.Value
+                |> Seq.map DirectoryInfo
+                |> Seq.filter (fun paketFolder -> paketFolder.Exists)
+                |> Seq.collect (fun paketFolder -> try paketFolder.GetDirectories() with _ -> [||])
+                |> Seq.map (fun d -> d, d.Name)
+                |> Internals.Logic.paketVersionSortForNugetCacheFolder
+                |> Seq.map snd
+                |> Seq.concat
+                |> Seq.map fst
+                |> Seq.tryPick (fun versionFolder -> try tryFindToolDll versionFolder with _ -> None)
+
+            let toolPath, toolArguments =
+                // the warnings come before dotnetCommand, which can fail
+                match Internals.Logic.choosePaket warn localTool toolPathExe isGlobalToolPath (fun () -> globalTools |> List.tryFind File.Exists) restoredTool with
+                | Some (Internals.Logic.PaketExe paketExe) -> paketExe, ""
+                | Some (Internals.Logic.PaketDll paketDll) ->
+                    try dotnetCommand paketDll
+                    with e when Option.isSome notRestoredLocalTool -> failwith (withLocalToolHint e.Message)
                 | None ->
+                    // restoredTool ran, which looked for paketFolders
+                    failwith (Internals.Logic.paketNotFound notRestoredLocalTool scriptDir [ yield! globalTools; yield! paketFolders.Value ])
 
-                  let globalTools =
-                    [
-                      Path.Combine(userProfile, ".dotnet", "tools")
-                      Path.Combine(userProfile, PM_DIR)
-                    ]
-                    |> List.map (fun dir -> Path.Combine(dir, toolPathExecutable))
-
-                  match globalTools |> List.tryFind File.Exists with
-                  | Some paketExe -> paketExe, ""
-                  | None ->
-
-                  // the newest Paket .NET tool restored in the NuGet packages folders
-                  let paketFolders = paketFoldersOfNuGetPackages scriptDir
-                  let restoredTool =
-                      paketFolders
-                      |> Seq.map DirectoryInfo
-                      |> Seq.filter (fun paketFolder -> paketFolder.Exists)
-                      |> Seq.collect (fun paketFolder -> try paketFolder.GetDirectories() with _ -> [||])
-                      |> Seq.map (fun d -> d, d.Name)
-                      |> Internals.Logic.paketVersionSortForNugetCacheFolder
-                      |> Seq.map snd
-                      |> Seq.concat
-                      |> Seq.map fst
-                      |> Seq.tryPick (fun versionFolder -> try tryFindToolDll versionFolder with _ -> None)
-
-                  match restoredTool with
-                  | Some paketDll -> dotnetCommand paketDll
-                  | None ->
-                    let foldersTried =
-                      [ yield! globalTools; yield! paketFolders ]
-                      |> List.map (fun f -> sprintf " - %s" f)
-                      |> String.concat Environment.NewLine
-                    failwithf "Paket was not found in '%s' or a parent directory, as a local tool, or in those locations:\n\n%s\n\nPlease install the Paket .NET tool: dotnet tool install paket"
-                        scriptDir foldersTried
-
-            Console.ForegroundColor <- ConsoleColor.Green
-            Console.Write ":paket>"
-            Console.ResetColor()
-            Console.WriteLine(sprintf " using %s" ((quoteProgram toolPath + " " + toolArguments).TrimEnd()))
+            writeLine ConsoleColor.Green (sprintf "using %s" ((quoteProgram toolPath + " " + toolArguments).TrimEnd()))
         
             try File.Delete(loadScript) with _ -> ()
             File.WriteAllLines(workingDirSpecFile.FullName, packageManagerTextLines)
@@ -694,22 +761,31 @@ module internal PaketHandler =
             p.ErrorDataReceived.Add(fun d -> if not (isNull d.Data) then errors.Add d.Data)
             p.OutputDataReceived.Add(fun d -> 
                 if not (isNull d.Data) then
-                    Console.ForegroundColor <- ConsoleColor.Green
-                    Console.Write ":paket>"
-                    Console.ResetColor()
-                    Console.WriteLine (" " + d.Data)
+                    writeLine ConsoleColor.Green d.Data
                     log.Add d.Data
             )
-            p.Start() |> ignore
+            // as a global tool that isn't executable
+            try p.Start() |> ignore
+            // its message only, as with dotnetCommand: an inner exception would come after the restore message
+            with e when Option.isSome notRestoredLocalTool -> failwith (withLocalToolHint e.Message)
             p.BeginErrorReadLine()
             p.BeginOutputReadLine()
             p.WaitForExit()
             
             if p.ExitCode <> 0 then
                 let msg = String.Join(Environment.NewLine, errors)
-                failwithf "Package resolution using '%s %s' failed, see directory '%s'.%s%s"
+                sprintf "Package resolution using '%s %s' failed, see directory '%s'.%s%s"
                     (quoteProgram startInfo.FileName) startInfo.Arguments workingDir Environment.NewLine msg
+                |> withLocalToolHint
+                |> failwith
             else
+                // the result of a paket that ran in place of the local tool, maybe another version, isn't kept: with
+                // a comment, paket.dependencies no longer equals the lines of the script, and the next resolution runs
+                // paket again, the local tool once it is restored, which installs the versions of the paket.lock left
+                // here, as paket install does. It isn't deleted, as another resolution of the script may have started
+                // a paket that waits for the lock of this folder to read it.
+                if Option.isSome notRestoredLocalTool then
+                    try File.AppendAllLines(workingDirSpecFile.FullName, [ "// installed by a paket that ran in place of the local tool" ]) with _ -> ()
                 (loadScript,additionalIncludeFolders())
 
     /// Resolve packages loaded into scripts using `paket:` in `#r` directives such as `#r @"paket: nuget AmazingNugetPackage"`. 
