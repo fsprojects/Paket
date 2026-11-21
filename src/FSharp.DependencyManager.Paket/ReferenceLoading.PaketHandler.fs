@@ -628,7 +628,11 @@ module internal PaketHandler =
                     match versionFolders |> List.tryPick (fun folder -> try tryFindToolDll (DirectoryInfo folder) with _ -> None) with
                     | Some paketDll -> dotnetCommand paketDll
                     | None ->
-                        failwithf "Paket %s, the local tool of '%s', is not restored. Please run 'dotnet tool restore'." version manifest
+                        let notRestoredIn =
+                            match versionFolders with
+                            | [] -> ""
+                            | folders -> " in " + (folders |> List.map (fun folder -> $"'%s{folder}'") |> String.concat " or ")
+                        failwith $"Paket %s{version}, the local tool of '%s{manifest}', is not restored%s{notRestoredIn}. Please run 'dotnet tool restore' in '%s{manifestFolder}'."
                 | None ->
 
                   let globalTools =
