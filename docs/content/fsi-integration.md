@@ -10,13 +10,32 @@ The extension runs the Paket .NET tool. It looks for, in order:
 
 * the local tool of the first `.config/dotnet-tools.json` or `dotnet-tools.json`
   up from the script that has Paket, without looking above an `isRoot` one (run
-  `dotnet tool restore` first),
+  `dotnet tool restore` first, in the folder that has `.config/dotnet-tools.json`
+  or `dotnet-tools.json`),
 * Paket installed with `dotnet tool install paket --tool-path`, in the folder
   hierarchy containing the script, directly or in a `.paket` folder; it is
   skipped with a warning when such a manifest declares Paket,
 * a global tool, in `~/.dotnet/tools` or `~/.paket`,
-* the most recent Paket .NET tool restored in the NuGet packages folder
-  (`~/.nuget/packages/paket`).
+* the most recent Paket .NET tool restored in the NuGet packages folder.
+
+The local tool is the `paket.dll` that `dotnet tool restore` recorded for its
+version in `~/.dotnet/toolResolverCache`, or under `DOTNET_CLI_HOME` when it is set,
+which is the one that `dotnet tool run` runs. When none is recorded, or that
+`paket.dll` is gone, the local tool is looked for in the NuGet packages folder, and
+then in `~/.nuget/packages`. The most recent Paket .NET tool is the most recent one
+of these two folders.
+
+The NuGet packages folder is `NUGET_PACKAGES` when it is set, without running
+`dotnet`; a relative path, which NuGet refuses, is left out. When it isn't set,
+`#r "paket:"` runs `dotnet nuget locals global-packages --list`, which gives the
+`globalPackagesFolder` of the `nuget.config` files, or else `~/.nuget/packages`. It
+runs it in the folder that has `.config/dotnet-tools.json` or `dotnet-tools.json`
+for the local tool, as `dotnet tool restore` restores the tool there when run in
+that folder, and in the folder of the script for the most recent Paket .NET tool.
+It runs it with the first `dotnet` that has an SDK, looked for in the folders listed
+below. When no `dotnet` has an SDK, or the command fails or takes more than 30
+seconds, as with a `global.json` that asks for an SDK that isn't installed, only
+`~/.nuget/packages` is looked at.
 
 The local tool and the one restored in the NuGet packages folder are each a
 `paket.dll`, which runs with the first `dotnet` that has a .NET runtime the tool

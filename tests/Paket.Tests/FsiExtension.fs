@@ -315,3 +315,82 @@ module FsiExtension =
             Assert.AreEqual(None, runtimesOfDotnet (System.IO.Path.Combine(folder, "shared", "dotnet")))
         finally
             System.IO.Directory.Delete(folder, true)
+
+    [<Test>]
+    let ``a dotnet has an SDK when a folder of its sdk folder has the dotnet.dll of an SDK`` () =
+        let folder = dotnetInstall [ "10.0.2", true ]
+        try
+            let hasSdk = ReferenceLoading.Internals.Logic.hasSdk
+            let dotnet = System.IO.Path.Combine(folder, "dotnet")
+            let sdk = System.IO.Path.Combine(folder, "sdk", "10.0.100")
+            Assert.AreEqual(Some false, hasSdk dotnet)
+            System.IO.Directory.CreateDirectory sdk |> ignore
+            Assert.AreEqual(Some false, hasSdk dotnet)
+            System.IO.File.WriteAllText(System.IO.Path.Combine(sdk, "dotnet.dll"), "")
+            Assert.AreEqual(Some true, hasSdk dotnet)
+            // as next to a link like /usr/bin/dotnet
+            Assert.AreEqual(None, hasSdk (System.IO.Path.Combine(folder, "shared", "dotnet")))
+        finally
+            System.IO.Directory.Delete(folder, true)
+
+    [<Test>]
+    let ``dotnet nuget locals gives the NuGet packages folder`` () =
+        let globalPackages = ReferenceLoading.Internals.Logic.globalPackagesOfNuGetLocals
+        let packages = inRoot [ "home"; ".nuget"; "packages" ] + string System.IO.Path.DirectorySeparatorChar
+        Assert.AreEqual(Some packages, globalPackages ("global-packages: " + packages + "\n"))
+        Assert.AreEqual(Some packages, globalPackages ("Welcome to .NET!\r\nglobal-packages: " + packages + "\r\n"))
+        Assert.AreEqual(None, globalPackages "error: The local resource 'global-packages' is unknown.\n")
+        Assert.AreEqual(None, globalPackages "global-packages: \n")
+        Assert.AreEqual(None, globalPackages "global-packages: packages\n")
+        Assert.AreEqual(None, globalPackages "")
+
+    [<Test>]
+    let ``dotnet nuget locals gives a folder with spaces, without a final separator, or after the info caption of NuGet before 5.5`` () =
+        let globalPackages = ReferenceLoading.Internals.Logic.globalPackagesOfNuGetLocals
+        let packages = inRoot [ "John Smith"; "packages" ]
+        Assert.AreEqual(Some packages, globalPackages ("global-packages: " + packages + "\r\n"))
+        Assert.AreEqual(Some packages, globalPackages ("info : global-packages: " + packages + "\n"))
+
+    [<Test>]
+    let ``dotnet nuget locals gives no folder when its output wasn't UTF-8`` () =
+        let globalPackages = ReferenceLoading.Internals.Logic.globalPackagesOfNuGetLocals
+        Assert.AreEqual(None, globalPackages ("global-packages: " + inRoot [ "J\uFFFDr\uFFFDme"; "packages" ] + "\n"))
+
+    [<Test>]
+    let ``the toolResolverCache gives the paket.dll that dotnet tool restore recorded for a version`` () =
+        // as the SDK writes it, with \u escapes for some characters
+        let cache = """[{"Version":"12.0.0","TargetFramework":"net10.0","RuntimeIdentifier":"any","Name":"paket","Runner":"dotnet","PathToExecutable":"C:\\Users\\J\u00E9r\u00F4me\\.nuget\\packages\\paket\\12.0.0\\tools\\net10.0\\any\\paket.dll"},{"Version":"12.0.0","TargetFramework":"net11.0","RuntimeIdentifier":"any","Name":"paket","Runner":"dotnet","PathToExecutable":"/a {b}/paket/12.0.0/tools/net10.0/any/paket.dll"},{"Version":"12.1.0","TargetFramework":"net10.0","RuntimeIdentifier":"any","Name":"paket","Runner":"dotnet","PathToExecutable":"/other/paket.dll"}]"""
+        let paketDlls = ReferenceLoading.Internals.Logic.paketDllsOfToolResolverCache
+        Assert.AreEqual(
+            [ @"C:\Users\Jérôme\.nuget\packages\paket\12.0.0\tools\net10.0\any\paket.dll"
+              "/a {b}/paket/12.0.0/tools/net10.0/any/paket.dll" ],
+            paketDlls "12.0.0" cache)
+        Assert.AreEqual([ "/other/paket.dll" ], paketDlls "12.1.0" cache)
+        Assert.AreEqual(List.empty<string>, paketDlls "12.2.0" cache)
+        Assert.AreEqual(List.empty<string>, paketDlls "12.0.0" "")
+
+    [<Test>]
+    let ``the toolResolverCache gives only the paket command that dotnet runs`` () =
+        let cache = """[{"Version":"1.0.0","TargetFramework":"net10.0","RuntimeIdentifier":"any","Name":"paket-wrapper","Runner":"dotnet","PathToExecutable":"/wrapper/paket.dll"},{"Version":"1.0.0","TargetFramework":"net10.0","RuntimeIdentifier":"linux-x64","Name":"paket","Runner":"executable","PathToExecutable":"/native/paket"}]"""
+        Assert.AreEqual(List.empty<string>, ReferenceLoading.Internals.Logic.paketDllsOfToolResolverCache "1.0.0" cache)
+
+    [<Test>]
+    let ``the Paket .NET tool is looked for in the NuGet packages folder, then in the one of the user profile, once each`` () =
+        let paketFolders = ReferenceLoading.Internals.Logic.paketFolders
+        let home = inRoot [ "home" ]
+        let homePaket = inRoot [ "home"; ".nuget"; "packages"; "paket" ]
+        let configured = inRoot [ "repo"; "packages" ]
+        Assert.AreEqual([ inRoot [ "repo"; "packages"; "paket" ]; homePaket ], paketFolders false (Some configured) home)
+        // dotnet nuget locals ends the default folder with a separator
+        let defaultFolder = inRoot [ "home"; ".nuget"; "packages" ] + string System.IO.Path.DirectorySeparatorChar
+        Assert.AreEqual([ homePaket ], paketFolders false (Some defaultFolder) home)
+        Assert.AreEqual([ homePaket ], paketFolders false None home)
+        Assert.AreEqual([ inRoot [ "repo"; "packages"; "paket" ] ], paketFolders false (Some configured) null)
+        Assert.AreEqual(List.empty<string>, paketFolders false None "")
+
+    [<Test>]
+    let ``on Windows the NuGet packages folders are the same without case`` () =
+        let paketFolders = ReferenceLoading.Internals.Logic.paketFolders
+        let upperCase = inRoot [ "HOME"; ".nuget"; "packages" ]
+        Assert.AreEqual(1, List.length (paketFolders true (Some upperCase) (inRoot [ "home" ])))
+        Assert.AreEqual(2, List.length (paketFolders false (Some upperCase) (inRoot [ "home" ])))

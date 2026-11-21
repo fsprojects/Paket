@@ -210,6 +210,67 @@ module Logic =
         |> Option.orElseWith (fun () -> Seq.tryHead rated)
         |> Option.map fst
 
+    /// Whether a dotnet has an SDK, which `dotnet nuget` needs: a folder of the sdk folder next to it
+    /// with the dotnet.dll of an SDK. None when there is no shared folder next to it either, as next
+    /// to a link like /usr/bin/dotnet.
+    let hasSdk (dotnet: string) =
+        let folder = System.IO.Path.GetDirectoryName dotnet
+        let sdks = System.IO.DirectoryInfo(System.IO.Path.Combine(folder, "sdk"))
+        if sdks.Exists
+           && sdks.GetDirectories() |> Array.exists (fun sdk -> System.IO.File.Exists(System.IO.Path.Combine(sdk.FullName, "dotnet.dll")))
+        then Some true
+        elif System.IO.Directory.Exists(System.IO.Path.Combine(folder, "shared")) then Some false
+        else None
+
+    /// The paket.dll files that `dotnet tool restore` recorded for a version of paket, in the content
+    /// of the .dotnet/toolResolverCache/1/paket file of the dotnet home folder, which `dotnet tool run`
+    /// reads: the PathToExecutable of the paket command of that version that dotnet runs, for any
+    /// target framework. It reads the JSON that the SDK writes, an array of objects without nested ones.
+    let paketDllsOfToolResolverCache (version: string) (content: string) =
+        let jsonString = "\"((?:[^\"\\\\]|\\\\.)*)\""
+        let value (name: string) (row: string) =
+            let m = System.Text.RegularExpressions.Regex.Match(row, "\"" + name + "\"\\s*:\\s*" + jsonString)
+            if m.Success then Some(System.Text.RegularExpressions.Regex.Unescape m.Groups.[1].Value) else None
+        System.Text.RegularExpressions.Regex.Matches(content, "\\{(?:[^{}\"]|" + jsonString + ")*\\}")
+        |> Seq.cast<System.Text.RegularExpressions.Match>
+        |> Seq.map (fun row -> row.Value)
+        |> Seq.filter (fun row ->
+            value "Name" row = Some "paket"
+            // and not an executable, as a tool package for a runtime can have
+            && value "Runner" row = Some "dotnet"
+            && value "Version" row |> Option.exists (fun recorded -> System.String.Equals(recorded, version, System.StringComparison.OrdinalIgnoreCase)))
+        |> Seq.choose (value "PathToExecutable")
+        |> List.ofSeq
+
+    /// The folders of the Paket .NET tool in a NuGet packages folder and in the one of the user
+    /// profile, ~/.nuget/packages, in that order and once each, without case on Windows. A folder
+    /// with characters that .NET Framework refuses in a path is left out.
+    let paketFolders (isWindows: bool) (nugetPackages: string option) (userProfile: string) =
+        [ match nugetPackages with
+          | Some nugetPackages -> yield [| nugetPackages; "paket" |]
+          | None -> ()
+          if not (System.String.IsNullOrEmpty userProfile) then
+              yield [| userProfile; ".nuget"; "packages"; "paket" |] ]
+        |> List.choose (fun parts ->
+            try Some(System.IO.Path.GetFullPath(System.IO.Path.Combine parts)) with _ -> None)
+        |> List.distinctBy (fun folder -> if isWindows then folder.ToUpperInvariant() else folder)
+
+    /// The folder in the output of `dotnet nuget locals global-packages --list`, which is
+    /// global-packages: <folder>, or info : global-packages: <folder> before NuGet 5.5 (SDK 3.1.200).
+    /// A relative folder, or one with a character that the output couldn't encode, is left out.
+    let globalPackagesOfNuGetLocals (output: string) =
+        let info = "info : "
+        let prefix = "global-packages:"
+        output.Split([| '\r'; '\n' |], System.StringSplitOptions.RemoveEmptyEntries)
+        |> Array.map (fun line -> if line.StartsWith(info, System.StringComparison.Ordinal) then line.Substring info.Length else line)
+        |> Array.tryPick (fun line ->
+            if line.StartsWith(prefix, System.StringComparison.Ordinal)
+            then Some(line.Substring(prefix.Length).Trim())
+            else None)
+        // U+FFFD for bytes that aren't UTF-8, as from the OEM code page of the console on Windows before
+        // 10 1909, where the SDK doesn't switch its output to UTF-8
+        |> Option.filter (fun folder -> folder.IndexOf '\uFFFD' < 0 && System.IO.Path.IsPathRooted folder)
+
 namespace ReferenceLoading
 module internal PaketHandler =
 
@@ -279,11 +340,6 @@ module internal PaketHandler =
             Path.GetFullPath(Path.Combine(userProfile, PM_DIR)),
             StringComparison.OrdinalIgnoreCase)
 
-    let nugetPackagesFolder =
-        match Environment.GetEnvironmentVariable "NUGET_PACKAGES" with
-        | null | "" -> Path.Combine(userProfile, ".nuget", "packages")
-        | folder -> folder
-
     /// paket.dll of a version of the Paket .NET tool restored into the NuGet packages folder
     let tryFindToolDll (versionFolder: DirectoryInfo) =
         let tools = DirectoryInfo(Path.Combine(versionFolder.FullName, "tools"))
@@ -292,22 +348,21 @@ module internal PaketHandler =
         |> Seq.map (fun frameworkFolder -> Path.Combine(frameworkFolder.FullName, "any", "paket.dll"))
         |> Seq.tryFind File.Exists
 
-    /// The first tool manifest up from the directory that has paket, with the version of paket.
-    /// As dotnet, it doesn't look above an "isRoot" manifest.
+    /// The first tool manifest up from the directory that has paket, with the version of paket and
+    /// the folder that the manifest is for: the one of dotnet-tools.json or of its .config folder,
+    /// where `dotnet tool restore` is run. As dotnet, it doesn't look above an "isRoot" manifest.
     let findLocalTool (baseDir: DirectoryInfo) =
         getDirectoryAndAllParentDirectories baseDir
         |> Seq.collect (fun dir ->
-            [ Path.Combine(dir.FullName, ".config", "dotnet-tools.json")
-              Path.Combine(dir.FullName, "dotnet-tools.json") ])
-        |> Seq.filter File.Exists
-        |> Seq.map (fun manifest -> manifest, Internals.Logic.paketOfToolManifest (File.ReadAllText manifest))
-        |> Seq.tryFind (fun (_, (version, isRoot)) -> Option.isSome version || isRoot)
-        |> Option.bind (fun (manifest, (version, _)) -> version |> Option.map (fun version -> manifest, version))
+            [ dir.FullName, Path.Combine(dir.FullName, ".config", "dotnet-tools.json")
+              dir.FullName, Path.Combine(dir.FullName, "dotnet-tools.json") ])
+        |> Seq.filter (snd >> File.Exists)
+        |> Seq.map (fun (folder, manifest) -> folder, manifest, Internals.Logic.paketOfToolManifest (File.ReadAllText manifest))
+        |> Seq.tryFind (fun (_, _, (version, isRoot)) -> Option.isSome version || isRoot)
+        |> Option.bind (fun (folder, manifest, (version, _)) -> version |> Option.map (fun version -> manifest, version, folder))
 
-    /// The dotnet to run a framework-dependent paket.dll: of the dotnetCandidates that exist, the one
-    /// that pickDotnet picks for the Microsoft.NETCore.App that its runtimeconfig.json asks for, with
-    /// the DOTNET_ROLL_FORWARD of the environment
-    let findDotnet (paketDll: string) =
+    /// The dotnetCandidates that exist
+    let existingDotnets () =
         let processPath =
             try
                 use current = System.Diagnostics.Process.GetCurrentProcess()
@@ -316,6 +371,19 @@ module internal PaketHandler =
             with _ -> None
         let runtimeDirectory =
             try Some(System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()) with _ -> None
+        Internals.Logic.dotnetCandidates
+            isWindows
+            Environment.GetEnvironmentVariable
+            processPath
+            runtimeDirectory
+            (Environment.GetFolderPath Environment.SpecialFolder.ProgramFiles)
+            userProfile
+        |> Seq.filter File.Exists
+
+    /// The dotnet to run a framework-dependent paket.dll: of the dotnetCandidates that exist, the one
+    /// that pickDotnet picks for the Microsoft.NETCore.App that its runtimeconfig.json asks for, with
+    /// the DOTNET_ROLL_FORWARD of the environment
+    let findDotnet (paketDll: string) =
         let netCoreApp =
             try
                 Path.ChangeExtension(paketDll, ".runtimeconfig.json")
@@ -331,15 +399,93 @@ module internal PaketHandler =
                     Internals.Logic.runtimesOfDotnet dotnet
                     |> Option.map (Internals.Logic.runsApp netCoreApp)
                 with _ -> None
-        Internals.Logic.dotnetCandidates
-            isWindows
-            Environment.GetEnvironmentVariable
-            processPath
-            runtimeDirectory
-            (Environment.GetFolderPath Environment.SpecialFolder.ProgramFiles)
-            userProfile
-        |> Seq.filter File.Exists
+        existingDotnets ()
         |> Internals.Logic.pickDotnet runsPaket
+
+    /// Kills a process with its child processes, as the one of NuGet that `dotnet nuget` starts, on the
+    /// .NET Core 3.0 and later that has Process.Kill(bool); else the process only
+    let killProcessTree (p: System.Diagnostics.Process) =
+        try
+            match typeof<System.Diagnostics.Process>.GetMethod("Kill", [| typeof<bool> |]) with
+            | null -> p.Kill()
+            | kill -> kill.Invoke(p, [| box true |]) |> ignore
+        with _ -> ()
+
+    /// The NuGet packages folder of a folder, as `dotnet nuget locals global-packages --list` gives it
+    /// there from the nuget.config files, run with the dotnet that pickDotnet picks with hasSdk.
+    /// NUGET_PACKAGES, which NuGet takes first, is taken without running dotnet, and only when it is a
+    /// full path, as NuGet requires. None otherwise, or when dotnet doesn't tell it: there is none, or
+    /// the command fails or takes more than 30 seconds.
+    let nugetPackagesFolder (folder: string) =
+        match Environment.GetEnvironmentVariable "NUGET_PACKAGES" with
+        | null | "" ->
+            existingDotnets ()
+            // an sdk folder that can't be listed is unknown
+            |> Internals.Logic.pickDotnet (fun dotnet -> try Internals.Logic.hasSdk dotnet with _ -> None)
+            |> Option.bind (fun dotnet ->
+                try
+                    let newStartInfo () =
+                        System.Diagnostics.ProcessStartInfo(
+                            FileName = dotnet,
+                            Arguments = "nuget locals global-packages --list",
+                            WorkingDirectory = folder,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                            CreateNoWindow = true,
+                            UseShellExecute = false)
+                    let startInfo =
+                        try
+                            let startInfo = newStartInfo ()
+                            startInfo.Environment.["DOTNET_NOLOGO"] <- "1"
+                            startInfo.Environment.["DOTNET_CLI_UI_LANGUAGE"] <- "en"
+                            // the first use of an SDK doesn't create the ASP.NET Core development certificate,
+                            // nor check the workloads, whose message would be lost
+                            startInfo.Environment.["DOTNET_GENERATE_ASPNET_CERTIFICATE"] <- "false"
+                            startInfo.Environment.["DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK"] <- "true"
+                            startInfo
+                        // on .NET Framework, Environment throws when two variables differ only by case, as the
+                        // TMP and tmp of Git Bash, and keeps the variables read until then: a new start info
+                        // runs dotnet with all the variables of F# Interactive instead
+                        with _ -> newStartInfo ()
+                    // what recent SDKs write on Windows 10 1909 and later, and elsewhere with a UTF-8 locale
+                    startInfo.StandardOutputEncoding <- Text.Encoding.UTF8
+                    use p = System.Diagnostics.Process.Start startInfo
+                    // both read while it runs, so that neither pipe fills up
+                    let output = p.StandardOutput.ReadToEndAsync()
+                    p.StandardError.ReadToEndAsync() |> ignore
+                    // an SDK that hangs doesn't block the script, nor stays running
+                    if not (p.WaitForExit 30000 && output.Wait 5000) then
+                        killProcessTree p
+                        None
+                    elif p.ExitCode <> 0 then None
+                    else Internals.Logic.globalPackagesOfNuGetLocals output.Result
+                with _ -> None)
+        // as NuGet, which refuses a relative one; on .NET Framework, IsPathRooted throws on quotes
+        | folder when (try Path.IsPathRooted folder with _ -> false) -> Some folder
+        | _ -> None
+
+    /// The folders of the Paket .NET tool in the NuGet packages folders of a folder: the one of
+    /// nugetPackagesFolder, then the one of ~/.nuget/packages, for a tool restored from another folder
+    /// or when nugetPackagesFolder gives none
+    let paketFoldersOfNuGetPackages (folder: string) =
+        Internals.Logic.paketFolders isWindows (nugetPackagesFolder folder) userProfile
+
+    /// The paket.dll of a version of the local tool that `dotnet tool run` runs: the one that
+    /// `dotnet tool restore` recorded in the toolResolverCache of the dotnet home folder, DOTNET_CLI_HOME
+    /// or else the user profile, if it exists
+    let paketDllOfToolResolverCache (version: string) =
+        let dotnetHome =
+            match Environment.GetEnvironmentVariable "DOTNET_CLI_HOME" with
+            | null | "" -> userProfile
+            | dotnetHome -> dotnetHome
+        try
+            if String.IsNullOrEmpty dotnetHome then None else
+            let cache = Path.Combine(dotnetHome, ".dotnet", "toolResolverCache", "1", "paket")
+            if not (File.Exists cache) then None else
+            File.ReadAllText cache
+            |> Internals.Logic.paketDllsOfToolResolverCache version
+            |> List.tryFind File.Exists
+        with _ -> None
 
     /// A program as a command line shows it, in quotes when its path has a space, as
     /// C:\Program Files\dotnet\dotnet.exe
@@ -456,7 +602,7 @@ module internal PaketHandler =
                     // a global tool comes after the local tool, without a warning
                     | Some paketExe, Some _ when isGlobalToolPath paketExe -> None
                     // as in the targets, the local tool runs instead: it can be an older Paket, such as the paket.exe or bootstrapper of Paket 11
-                    | Some paketExe, Some (manifest, _) ->
+                    | Some paketExe, Some (manifest, _, _) ->
                         Console.ForegroundColor <- ConsoleColor.Yellow
                         Console.Write ":paket>"
                         Console.ResetColor()
@@ -469,11 +615,24 @@ module internal PaketHandler =
                 | None ->
 
                 match localTool with
-                | Some (manifest, version) ->
-                    match tryFindToolDll (DirectoryInfo(Path.Combine(nugetPackagesFolder, "paket", version.ToLowerInvariant()))) with
+                | Some (manifest, version, manifestFolder) ->
+                    match paketDllOfToolResolverCache version with
                     | Some paketDll -> dotnetCommand paketDll
                     | None ->
-                        failwithf "Paket %s, the local tool of '%s', is not restored. Please run 'dotnet tool restore'." version manifest
+                    // else where `dotnet tool restore` restores it when run in the folder of the manifest, or
+                    // where it was restored with another dotnet home folder
+                    let versionFolders =
+                        paketFoldersOfNuGetPackages manifestFolder
+                        |> List.map (fun paketFolder -> Path.Combine(paketFolder, version.ToLowerInvariant()))
+                    // a folder that can't be read doesn't stop the lookup in the next one
+                    match versionFolders |> List.tryPick (fun folder -> try tryFindToolDll (DirectoryInfo folder) with _ -> None) with
+                    | Some paketDll -> dotnetCommand paketDll
+                    | None ->
+                        let notRestoredIn =
+                            match versionFolders with
+                            | [] -> ""
+                            | folders -> " in " + (folders |> List.map (fun folder -> $"'%s{folder}'") |> String.concat " or ")
+                        failwith $"Paket %s{version}, the local tool of '%s{manifest}', is not restored%s{notRestoredIn}. Please run 'dotnet tool restore' in '%s{manifestFolder}'."
                 | None ->
 
                   let globalTools =
@@ -487,24 +646,25 @@ module internal PaketHandler =
                   | Some paketExe -> paketExe, ""
                   | None ->
 
-                  // the newest Paket .NET tool restored in the NuGet packages folder
-                  let nugetDir = DirectoryInfo(Path.Combine(nugetPackagesFolder, "paket"))
+                  // the newest Paket .NET tool restored in the NuGet packages folders
+                  let paketFolders = paketFoldersOfNuGetPackages scriptDir
                   let restoredTool =
-                    if not nugetDir.Exists then None
-                    else
-                      nugetDir.GetDirectories()
+                      paketFolders
+                      |> Seq.map DirectoryInfo
+                      |> Seq.filter (fun paketFolder -> paketFolder.Exists)
+                      |> Seq.collect (fun paketFolder -> try paketFolder.GetDirectories() with _ -> [||])
                       |> Seq.map (fun d -> d, d.Name)
                       |> Internals.Logic.paketVersionSortForNugetCacheFolder
                       |> Seq.map snd
                       |> Seq.concat
                       |> Seq.map fst
-                      |> Seq.tryPick tryFindToolDll
+                      |> Seq.tryPick (fun versionFolder -> try tryFindToolDll versionFolder with _ -> None)
 
                   match restoredTool with
                   | Some paketDll -> dotnetCommand paketDll
                   | None ->
                     let foldersTried =
-                      [ yield! globalTools; nugetDir.FullName ]
+                      [ yield! globalTools; yield! paketFolders ]
                       |> List.map (fun f -> sprintf " - %s" f)
                       |> String.concat Environment.NewLine
                     failwithf "Paket was not found in '%s' or a parent directory, as a local tool, or in those locations:\n\n%s\n\nPlease install the Paket .NET tool: dotnet tool install paket"
