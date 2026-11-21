@@ -50,6 +50,166 @@ module Logic =
         let isRoot = System.Text.RegularExpressions.Regex.IsMatch(content, "\"isRoot\"\\s*:\\s*true", options)
         (if paketVersion.Success then Some paketVersion.Groups.[1].Value else None), isRoot
 
+    /// Where to look for dotnet, in order: the host that runs the script (DOTNET_HOST_PATH, the
+    /// running process when it is dotnet, the root of the running runtime), then DOTNET_ROOT, the
+    /// PATH and the default install folders. A relative path, which would depend on the current
+    /// folder, or on the current drive on Windows, is left out.
+    let dotnetCandidates
+        (isWindows: bool)
+        (getEnvironmentVariable: string -> string)
+        (processPath: string option)
+        (runtimeDirectory: string option)
+        (programFiles: string)
+        (userProfile: string)
+        =
+        let dotnetExe = if isWindows then "dotnet.exe" else "dotnet"
+        // file names are compared without case on Windows only
+        let nameComparison = if isWindows then System.StringComparison.OrdinalIgnoreCase else System.StringComparison.Ordinal
+        let inFolder (folders: string list) =
+            if List.exists System.String.IsNullOrEmpty folders
+            then None
+            else
+                // on .NET Framework, Path.Combine throws on invalid characters, such as quotes
+                try
+                    Some(System.IO.Path.Combine(Array.ofList (folders @ [ dotnetExe ])))
+                with _ -> None
+        let isFullyQualified (path: string) =
+            if isWindows then
+                // a drive or a UNC path, and not \folder or C:folder, which depend on the current drive or on
+                // its current folder
+                path.StartsWith(@"\\", System.StringComparison.Ordinal)
+                || path.StartsWith("//", System.StringComparison.Ordinal)
+                || (path.Length >= 3 && System.Char.IsLetter path.[0] && path.[1] = ':' && (path.[2] = '\\' || path.[2] = '/'))
+            else
+                System.IO.Path.IsPathRooted path
+        [
+            match getEnvironmentVariable "DOTNET_HOST_PATH" with
+            | null | "" -> ()
+            | path -> yield Some path
+            // `dotnet fsi`
+            match processPath with
+            | Some exe when System.String.Equals(System.IO.Path.GetFileName exe, dotnetExe, nameComparison) -> yield Some exe
+            | _ -> ()
+            // the root of the runtime that runs the script, <root>/shared/Microsoft.NETCore.App/<version>/,
+            // and not the folder of the .NET Framework or of a self-contained app
+            match runtimeDirectory with
+            | None -> ()
+            | Some runtimeDirectory ->
+                yield
+                    try
+                        let app = System.IO.DirectoryInfo(runtimeDirectory).Parent
+                        let shared = if isNull app then null else app.Parent
+                        if not (isNull shared)
+                           && not (isNull shared.Parent)
+                           && System.String.Equals(app.Name, "Microsoft.NETCore.App", nameComparison)
+                           && System.String.Equals(shared.Name, "shared", nameComparison)
+                        then inFolder [ shared.Parent.FullName ]
+                        else None
+                    with _ -> None
+            yield inFolder [ getEnvironmentVariable "DOTNET_ROOT" ]
+            match getEnvironmentVariable "PATH" with
+            | null -> ()
+            | path -> yield! path.Split(System.IO.Path.PathSeparator) |> Seq.map (fun folder -> inFolder [ folder.Trim '"' ])
+            if isWindows then
+                // the Program Files of a 32-bit process is Program Files (x86)
+                yield inFolder [ getEnvironmentVariable "ProgramW6432"; "dotnet" ]
+                yield inFolder [ programFiles; "dotnet" ]
+                // the default of dotnet-install.ps1
+                yield inFolder [ getEnvironmentVariable "LOCALAPPDATA"; "Microsoft"; "dotnet" ]
+            else
+                yield inFolder [ "/usr/local/share/dotnet" ]
+                yield inFolder [ "/usr/share/dotnet" ]
+                yield inFolder [ "/usr/lib/dotnet" ]
+                yield inFolder [ "/usr/lib64/dotnet" ]
+            // the default of dotnet-install.sh
+            yield inFolder [ userProfile; ".dotnet" ]
+        ]
+        |> List.choose id
+        |> List.filter isFullyQualified
+        |> List.distinct
+
+    /// The version of Microsoft.NETCore.App that an app asks for in its runtimeconfig.json, and
+    /// whether the app runs on a later major version when that one is missing
+    type NetCoreApp = { Major: int; Minor: int; Patch: int; RollsForwardToLaterMajor: bool }
+
+    /// The major, minor and patch numbers of a version, and whether it is a prerelease
+    let private parseVersion (version: string) =
+        let m = System.Text.RegularExpressions.Regex.Match(version, "^(\\d+)\\.(\\d+)\\.(\\d+)(-|$)")
+        let number (group: int) =
+            match System.Int32.TryParse m.Groups.[group].Value with
+            | true, number -> Some number
+            | false, _ -> None
+        if not m.Success then None else
+        match number 1, number 2, number 3 with
+        | Some major, Some minor, Some patch -> Some((major, minor, patch), m.Groups.[4].Value = "-")
+        | _ -> None
+
+    /// The Microsoft.NETCore.App that the content of a runtimeconfig.json asks for. It reads the
+    /// runtimeconfig.json that the SDK writes, with "name" before "version" and without comments.
+    /// A rollForwardOnNoCandidateFx of 2 rolls forward as a rollForward of Major, as the hosts
+    /// released so far do. The host of .NET 12 ignores it: a rollForward of Major in its place in the
+    /// runtimeconfig.json of the tool fixes that, as the hosts before .NET 12 refuse both.
+    let netCoreAppOfRuntimeConfig (content: string) =
+        let options = System.Text.RegularExpressions.RegexOptions.IgnoreCase
+        let version =
+            System.Text.RegularExpressions.Regex.Match(content, "\"name\"\\s*:\\s*\"Microsoft\\.NETCore\\.App\"[^}]*?\"version\"\\s*:\\s*\"([^\"]+)\"", options)
+        let rollsForwardToLaterMajor =
+            System.Text.RegularExpressions.Regex.IsMatch(content, "\"rollForward\"\\s*:\\s*\"(Latest)?Major\"", options)
+            || System.Text.RegularExpressions.Regex.IsMatch(content, "\"rollForwardOnNoCandidateFx\"\\s*:\\s*2\\b", options)
+        if not version.Success then None else
+        parseVersion version.Groups.[1].Value
+        |> Option.map (fun ((major, minor, patch), _) ->
+            { Major = major; Minor = minor; Patch = patch; RollsForwardToLaterMajor = rollsForwardToLaterMajor })
+
+    /// The Microsoft.NETCore.App of an app with the DOTNET_ROLL_FORWARD of the environment, which
+    /// the host takes over the roll forward of the runtimeconfig.json
+    let withRollForwardVariable (rollForward: string) (netCoreApp: NetCoreApp) =
+        match rollForward with
+        | null | "" -> netCoreApp
+        | rollForward ->
+            let is (value: string) = System.String.Equals(rollForward, value, System.StringComparison.OrdinalIgnoreCase)
+            { netCoreApp with RollsForwardToLaterMajor = is "Major" || is "LatestMajor" }
+
+    /// Whether one of the runtimes of a dotnet, the folders of its shared/Microsoft.NETCore.App
+    /// named after their version, runs an app that asks for that Microsoft.NETCore.App. As the host,
+    /// it takes a runtime of the same major version, or of a later one when the app rolls forward,
+    /// that isn't below the version asked for, as a prerelease of that version is. The roll forward
+    /// of LatestPatch or Disable, which keep the minor version (Disable the whole version), is taken
+    /// as Minor.
+    let runsApp (netCoreApp: NetCoreApp) (runtimes: string seq) =
+        let asked = netCoreApp.Major, netCoreApp.Minor, netCoreApp.Patch
+        runtimes
+        |> Seq.choose parseVersion
+        |> Seq.exists (fun ((major, _, _) as version, isPrerelease) ->
+            (if isPrerelease then version > asked else version >= asked)
+            && (major = netCoreApp.Major || (netCoreApp.RollsForwardToLaterMajor && major > netCoreApp.Major)))
+
+    /// The runtimes of a dotnet: the versions in the shared/Microsoft.NETCore.App folder next to it
+    /// that have their Microsoft.NETCore.App.deps.json, without which the host passes over them.
+    /// None when there is no such folder, as next to a link like /usr/bin/dotnet.
+    let runtimesOfDotnet (dotnet: string) =
+        let runtimes =
+            System.IO.DirectoryInfo(
+                System.IO.Path.Combine(System.IO.Path.GetDirectoryName dotnet, "shared", "Microsoft.NETCore.App"))
+        if not runtimes.Exists then None else
+        runtimes.GetDirectories()
+        |> Array.filter (fun runtime ->
+            System.IO.File.Exists(System.IO.Path.Combine(runtime.FullName, "Microsoft.NETCore.App.deps.json")))
+        |> Array.map (fun runtime -> runtime.Name)
+        |> List.ofArray
+        |> Some
+
+    /// The first dotnet known to run the app, or else the first one whose runtimes are unknown, as
+    /// for a link like /usr/bin/dotnet, or else the first one, which says what runtime is missing.
+    /// It stops at the first dotnet known to run the app, without looking at the next ones.
+    let pickDotnet (runsTheApp: string -> bool option) (dotnets: string seq) =
+        let rated = dotnets |> Seq.map (fun dotnet -> dotnet, runsTheApp dotnet) |> Seq.cache
+        rated
+        |> Seq.tryFind (fun (_, runs) -> runs = Some true)
+        |> Option.orElseWith (fun () -> rated |> Seq.tryFind (fun (_, runs) -> Option.isNone runs))
+        |> Option.orElseWith (fun () -> Seq.tryHead rated)
+        |> Option.map fst
+
 namespace ReferenceLoading
 module internal PaketHandler =
 
@@ -144,13 +304,55 @@ module internal PaketHandler =
         |> Seq.tryFind (fun (_, (version, isRoot)) -> Option.isSome version || isRoot)
         |> Option.bind (fun (manifest, (version, _)) -> version |> Option.map (fun version -> manifest, version))
 
-    /// Runs a framework-dependent paket.dll with the dotnet that runs the script
+    /// The dotnet to run a framework-dependent paket.dll: of the dotnetCandidates that exist, the one
+    /// that pickDotnet picks for the Microsoft.NETCore.App that its runtimeconfig.json asks for, with
+    /// the DOTNET_ROLL_FORWARD of the environment
+    let findDotnet (paketDll: string) =
+        let processPath =
+            try
+                use current = System.Diagnostics.Process.GetCurrentProcess()
+                use mainModule = current.MainModule
+                Option.ofObj mainModule.FileName
+            with _ -> None
+        let runtimeDirectory =
+            try Some(System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()) with _ -> None
+        let netCoreApp =
+            try
+                Path.ChangeExtension(paketDll, ".runtimeconfig.json")
+                |> File.ReadAllText
+                |> Internals.Logic.netCoreAppOfRuntimeConfig
+                |> Option.map (Internals.Logic.withRollForwardVariable (Environment.GetEnvironmentVariable "DOTNET_ROLL_FORWARD"))
+            with _ -> None
+        let runsPaket (dotnet: string) =
+            match netCoreApp with
+            | None -> None
+            | Some netCoreApp ->
+                try
+                    Internals.Logic.runtimesOfDotnet dotnet
+                    |> Option.map (Internals.Logic.runsApp netCoreApp)
+                with _ -> None
+        Internals.Logic.dotnetCandidates
+            isWindows
+            Environment.GetEnvironmentVariable
+            processPath
+            runtimeDirectory
+            (Environment.GetFolderPath Environment.SpecialFolder.ProgramFiles)
+            userProfile
+        |> Seq.filter File.Exists
+        |> Internals.Logic.pickDotnet runsPaket
+
+    /// A program as a command line shows it, in quotes when its path has a space, as
+    /// C:\Program Files\dotnet\dotnet.exe
+    let quoteProgram (path: string) =
+        if path.Contains " " then "\"" + path + "\"" else path
+
+    /// The dotnet of findDotnet and the arguments that run a framework-dependent paket.dll; fails
+    /// when there is no dotnet
     let dotnetCommand (paketDll: string) =
-        let dotnet =
-            match Environment.GetEnvironmentVariable "DOTNET_HOST_PATH" with
-            | null | "" -> "dotnet"
-            | path -> path
-        dotnet, sprintf "\"%s\" " paketDll
+        match findDotnet paketDll with
+        | Some dotnet -> dotnet, $"\"%s{paketDll}\" "
+        | None ->
+            failwith $"No dotnet was found to run '%s{paketDll}'. Please set DOTNET_ROOT to the folder of dotnet in the environment of the IDE or app that runs F# Interactive, or add that folder to its PATH."
 
     /// Resolves absolute load script location: something like
     /// baseDir/.paket/load/scriptName
@@ -167,7 +369,7 @@ module internal PaketHandler =
 
     
     /// Resolve packages loaded into scripts using `paket:` in `#r` directives such as `#r @"paket: nuget AmazingNugetPackage"`. 
-    /// <remarks>This function will throw if the resolution is not successful or the tool wasn't found</remarks>
+    /// <remarks>This function will throw if the resolution is not successful, or if the tool or a dotnet to run it wasn't found</remarks>
     /// <param name="fileType">A string given to paket command to select the output language. Can be `fsx` or `csx`</param>
     /// <param name="targetFramework">A string given to paket command to fix the framework.</param>
     /// <param name="prioritizedSearchPaths">List of directories which are checked first to resolve paket installed with --tool-path.</param>
@@ -311,7 +513,7 @@ module internal PaketHandler =
             Console.ForegroundColor <- ConsoleColor.Green
             Console.Write ":paket>"
             Console.ResetColor()
-            Console.WriteLine(sprintf " using %s" ((toolPath + " " + toolArguments).TrimEnd()))
+            Console.WriteLine(sprintf " using %s" ((quoteProgram toolPath + " " + toolArguments).TrimEnd()))
         
             try File.Delete(loadScript) with _ -> ()
             File.WriteAllLines(workingDirSpecFile.FullName, packageManagerTextLines)
@@ -345,13 +547,13 @@ module internal PaketHandler =
             
             if p.ExitCode <> 0 then
                 let msg = String.Join(Environment.NewLine, errors)
-                failwithf "Package resolution using '%s' failed, see directory '%s'.%s%s"
-                    toolPath workingDir Environment.NewLine msg
+                failwithf "Package resolution using '%s %s' failed, see directory '%s'.%s%s"
+                    (quoteProgram startInfo.FileName) startInfo.Arguments workingDir Environment.NewLine msg
             else
                 (loadScript,additionalIncludeFolders())
 
     /// Resolve packages loaded into scripts using `paket:` in `#r` directives such as `#r @"paket: nuget AmazingNugetPackage"`. 
-    /// <remarks>This function will throw if the resolution is not successful or the tool wasn't found</remarks>
+    /// <remarks>This function will throw if the resolution is not successful, or if the tool or a dotnet to run it wasn't found</remarks>
     /// <param name="targetFramework">A string given to paket command to fix the framework.</param>
     /// <param name="scriptDir"The folder containing the script</param>
     /// <param name="scriptName">filename for the script (not necessarily existing if interactive evaluation)</param>
