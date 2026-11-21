@@ -23,7 +23,10 @@ skipped: `#r "paket:"` warns and runs a global tool instead, or else the most re
 Paket .NET tool restored, either of which may be a version other than the one in the
 manifest. When it finds neither, it fails and asks to run `dotnet tool restore`.
 When the Paket that runs instead fails, the error of `#r "paket:"` ends by repeating
-that the local tool isn't restored.
+that the local tool isn't restored. When it succeeds, its result isn't kept: the
+next run of the script runs Paket again, with the local tool once it is restored,
+which installs the package versions written in `paket.lock` by the Paket that ran
+instead, as `paket install` does.
 
 The local tool is the `paket.dll` that `dotnet tool restore` recorded for its
 version in `~/.dotnet/toolResolverCache`, or under `DOTNET_CLI_HOME` when it is set,

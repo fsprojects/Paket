@@ -779,6 +779,13 @@ module internal PaketHandler =
                 |> withLocalToolHint
                 |> failwith
             else
+                // the result of a paket that ran in place of the local tool, maybe another version, isn't kept: with
+                // a comment, paket.dependencies no longer equals the lines of the script, and the next resolution runs
+                // paket again, the local tool once it is restored, which installs the versions of the paket.lock left
+                // here, as paket install does. It isn't deleted, as another resolution of the script may have started
+                // a paket that waits for the lock of this folder to read it.
+                if Option.isSome notRestoredLocalTool then
+                    try File.AppendAllLines(workingDirSpecFile.FullName, [ "// installed by a paket that ran in place of the local tool" ]) with _ -> ()
                 (loadScript,additionalIncludeFolders())
 
     /// Resolve packages loaded into scripts using `paket:` in `#r` directives such as `#r @"paket: nuget AmazingNugetPackage"`. 
