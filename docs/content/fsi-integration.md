@@ -45,7 +45,10 @@ that folder, and in the folder of the script for the most recent Paket .NET tool
 It runs it with the first `dotnet` that has an SDK, looked for in the folders listed
 below. When no `dotnet` has an SDK, or the command fails or takes more than 30
 seconds, as with a `global.json` that asks for an SDK that isn't installed, only
-`~/.nuget/packages` is looked at.
+`~/.nuget/packages` is looked at. Each time the script resolves its packages, the
+command runs at most once in each folder, and in no other folder after a run that
+took more than 30 seconds: an SDK that hangs delays the script by 30 seconds, not
+by 30 seconds for each folder.
 
 The local tool and the one restored in the NuGet packages folder are each a
 `paket.dll`, which runs with the first `dotnet` that has a .NET runtime the tool

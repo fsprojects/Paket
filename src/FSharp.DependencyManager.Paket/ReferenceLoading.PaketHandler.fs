@@ -271,6 +271,34 @@ module Logic =
         // 10 1909, where the SDK doesn't switch its output to UTF-8
         |> Option.filter (fun folder -> folder.IndexOf '\uFFFD' < 0 && System.IO.Path.IsPathRooted folder)
 
+    /// What nugetPackagesFolder tells of the NuGet packages folder of a folder
+    type NuGetPackagesFolder =
+        /// the folder, or None when neither NUGET_PACKAGES nor dotnet gives one
+        | Known of string option
+        /// `dotnet nuget locals` didn't end within 30 seconds, or its output within 5 more seconds, as with an
+        /// SDK that hangs, which would hang again
+        | TimedOut
+
+    /// The NuGet packages folder of a folder, as nugetPackagesFolder tells it, for one resolution:
+    /// nugetPackagesFolder runs at most once per folder, compared as a string, and for no other folder
+    /// after a run that timed out: a folder not asked before it is then None.
+    let nugetPackagesFolderOnce (nugetPackagesFolder: string -> NuGetPackagesFolder) =
+        let folders = System.Collections.Generic.Dictionary<string, string option>()
+        let timedOut = ref false
+        fun (folder: string) ->
+            match folders.TryGetValue folder with
+            | true, packages -> packages
+            | false, _ ->
+                let packages =
+                    if timedOut.Value then None else
+                    match nugetPackagesFolder folder with
+                    | Known packages -> packages
+                    | TimedOut ->
+                        timedOut.Value <- true
+                        None
+                folders.[folder] <- packages
+                packages
+
     /// Where a global tool of paket is, in ~/.dotnet/tools and then ~/.paket. None without a user profile,
     /// and not relative to the current folder when HOME is empty. A path with characters that .NET Framework
     /// refuses in a path, such as quotes, is left out.
@@ -500,13 +528,14 @@ module internal PaketHandler =
     /// The NuGet packages folder of a folder, as `dotnet nuget locals global-packages --list` gives it
     /// there from the nuget.config files, run with sdkDotnet, the dotnet of findSdkDotnet, which is only
     /// looked for when needed. NUGET_PACKAGES, which NuGet takes first, is taken without running dotnet,
-    /// and only when it is a full path, as NuGet requires. None otherwise, or when dotnet doesn't tell it:
-    /// there is no dotnet, the command fails or takes more than 30 seconds, or its output has no full path.
+    /// and only when it is a full path, as NuGet requires. Known None otherwise, or when dotnet doesn't
+    /// tell it: there is no dotnet, the command fails, or its output has no full path. TimedOut when the
+    /// command doesn't end within 30 seconds, or its output within 5 more seconds.
     let nugetPackagesFolder (sdkDotnet: Lazy<string option>) (folder: string) =
         match Environment.GetEnvironmentVariable "NUGET_PACKAGES" with
         | null | "" ->
             sdkDotnet.Value
-            |> Option.bind (fun dotnet ->
+            |> Option.map (fun dotnet ->
                 try
                     let newStartInfo () =
                         System.Diagnostics.ProcessStartInfo(
@@ -540,19 +569,20 @@ module internal PaketHandler =
                     // an SDK that hangs doesn't block the script, nor stays running
                     if not (p.WaitForExit 30000 && output.Wait 5000) then
                         killProcessTree p
-                        None
-                    elif p.ExitCode <> 0 then None
-                    else Internals.Logic.globalPackagesOfNuGetLocals output.Result
-                with _ -> None)
+                        Internals.Logic.TimedOut
+                    elif p.ExitCode <> 0 then Internals.Logic.Known None
+                    else Internals.Logic.Known(Internals.Logic.globalPackagesOfNuGetLocals output.Result)
+                with _ -> Internals.Logic.Known None)
+            |> Option.defaultValue (Internals.Logic.Known None)
         // as NuGet, which refuses a relative one; on .NET Framework, IsPathRooted throws on quotes
-        | folder when (try Path.IsPathRooted folder with _ -> false) -> Some folder
-        | _ -> None
+        | folder when (try Path.IsPathRooted folder with _ -> false) -> Internals.Logic.Known(Some folder)
+        | _ -> Internals.Logic.Known None
 
-    /// The folders of the Paket .NET tool in the NuGet packages folders of a folder: the one of
-    /// nugetPackagesFolder, then the one of ~/.nuget/packages, for a tool restored from another folder
-    /// or when nugetPackagesFolder gives none
-    let paketFoldersOfNuGetPackages (sdkDotnet: Lazy<string option>) (folder: string) =
-        Internals.Logic.paketFolders isWindows (nugetPackagesFolder sdkDotnet folder) userProfile
+    /// The folders of the Paket .NET tool in the NuGet packages folders of a folder: the one that
+    /// nugetPackages gives, then the one of ~/.nuget/packages, for a tool restored from another folder
+    /// or when nugetPackages gives none. nugetPackages is the nugetPackagesFolderOnce of the resolution.
+    let paketFoldersOfNuGetPackages (nugetPackages: string -> string option) (folder: string) =
+        Internals.Logic.paketFolders isWindows (nugetPackages folder) userProfile
 
     /// The paket.dll of a version of the local tool that `dotnet tool run` runs: the one that
     /// `dotnet tool restore` recorded in the toolResolverCache of the dotnet home folder, DOTNET_CLI_HOME
@@ -689,10 +719,16 @@ module internal PaketHandler =
             // with an SDK that `dotnet nuget locals` needs
             let dotnets = lazy (existingDotnets ())
             let sdkDotnet = lazy (findSdkDotnet dotnets.Value)
+            // the folder of the manifest is often the folder of the script: `dotnet nuget locals` runs at most once
+            // per folder, and in no other folder after a run that timed out, as the same dotnet would hang again
+            let nugetPackages = Internals.Logic.nugetPackagesFolderOnce (nugetPackagesFolder sdkDotnet)
+            // the folder of the script, which findLocalTool walks up from: when the manifest is for that folder,
+            // findLocalTool gives the FullName that paketFolders below asks nugetPackages for, which runs once for both
+            let scriptFolder = DirectoryInfo scriptDir
             // the manifest that declares paket, with the paket.dll of its local tool or else the message that
             // it isn't restored
             let localTool =
-                findLocalTool (DirectoryInfo scriptDir)
+                findLocalTool scriptFolder
                 |> Option.map (fun (manifest, version, manifestFolder) ->
                     manifest,
                     match paketDllOfToolResolverCache version with
@@ -701,7 +737,7 @@ module internal PaketHandler =
                     // else where `dotnet tool restore` restores it when run in the folder of the manifest, or
                     // where it was restored with another dotnet home folder
                     let versionFolders =
-                        paketFoldersOfNuGetPackages sdkDotnet manifestFolder
+                        paketFoldersOfNuGetPackages nugetPackages manifestFolder
                         |> List.map (fun paketFolder -> Path.Combine(paketFolder, version.ToLowerInvariant()))
                     // a folder that can't be read doesn't stop the lookup in the next one
                     match versionFolders |> List.tryPick (fun folder -> try tryFindToolDll (DirectoryInfo folder) with _ -> None) with
@@ -722,11 +758,11 @@ module internal PaketHandler =
                 | None -> message
 
             // we try to resolve paket installed with --tool-path any place up in the folder structure from current script
-            let toolPathExe = findPaketExe prioritizedSearchPaths (DirectoryInfo scriptDir)
+            let toolPathExe = findPaketExe prioritizedSearchPaths scriptFolder
 
             let globalTools = Internals.Logic.globalToolPaths toolPathExecutable userProfile
 
-            let paketFolders = lazy (paketFoldersOfNuGetPackages sdkDotnet scriptDir)
+            let paketFolders = lazy (paketFoldersOfNuGetPackages nugetPackages scriptFolder.FullName)
             // the newest Paket .NET tool restored in the NuGet packages folders
             let restoredTool () =
                 paketFolders.Value

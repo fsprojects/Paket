@@ -356,6 +356,45 @@ module FsiExtension =
         let globalPackages = ReferenceLoading.Internals.Logic.globalPackagesOfNuGetLocals
         Assert.AreEqual(None, globalPackages ("global-packages: " + inRoot [ "J\uFFFDr\uFFFDme"; "packages" ] + "\n"))
 
+    /// The function of nugetPackagesFolderOnce, with the folders it ran nugetPackagesFolder for
+    let nugetPackagesFolderOnce (nugetPackagesFolder: string -> ReferenceLoading.Internals.Logic.NuGetPackagesFolder) =
+        let runs = ResizeArray()
+        ReferenceLoading.Internals.Logic.nugetPackagesFolderOnce (fun folder -> runs.Add folder; nugetPackagesFolder folder), runs
+
+    [<Test>]
+    let ``the NuGet packages folder of a folder is asked for once per resolution, even when there is none`` () =
+        let known = ReferenceLoading.Internals.Logic.Known
+        // the folder of the manifest, which gives none, then the one of the script, still asked after it
+        let nugetPackages, runs =
+            nugetPackagesFolderOnce (function
+                | "/repo/scripts" -> known (Some "/packages")
+                | _ -> known None)
+        Assert.AreEqual(None, nugetPackages "/repo")
+        Assert.AreEqual(None, nugetPackages "/repo")
+        Assert.AreEqual(Some "/packages", nugetPackages "/repo/scripts")
+        Assert.AreEqual(Some "/packages", nugetPackages "/repo/scripts")
+        Assert.AreEqual([ "/repo"; "/repo/scripts" ], List.ofSeq runs)
+
+    [<Test>]
+    let ``the NuGet packages folder is no longer asked for after dotnet nuget locals took too long`` () =
+        let nugetPackages, runs = nugetPackagesFolderOnce (fun _ -> ReferenceLoading.Internals.Logic.TimedOut)
+        Assert.AreEqual(None, nugetPackages "/repo")
+        Assert.AreEqual(None, nugetPackages "/repo/scripts")
+        Assert.AreEqual(None, nugetPackages "/repo")
+        Assert.AreEqual([ "/repo" ], List.ofSeq runs)
+
+    [<Test>]
+    let ``a NuGet packages folder told before a timeout is kept after it`` () =
+        let nugetPackages, runs =
+            nugetPackagesFolderOnce (function
+                | "/repo" -> ReferenceLoading.Internals.Logic.Known(Some "/packages")
+                | _ -> ReferenceLoading.Internals.Logic.TimedOut)
+        Assert.AreEqual(Some "/packages", nugetPackages "/repo")
+        Assert.AreEqual(None, nugetPackages "/repo/scripts")
+        Assert.AreEqual(None, nugetPackages "/other")
+        Assert.AreEqual(Some "/packages", nugetPackages "/repo")
+        Assert.AreEqual([ "/repo"; "/repo/scripts" ], List.ofSeq runs)
+
     [<Test>]
     let ``the toolResolverCache gives the paket.dll that dotnet tool restore recorded for a version`` () =
         // as the SDK writes it, with \u escapes for some characters
