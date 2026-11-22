@@ -41,14 +41,35 @@ module Logic =
         //|> Seq.concat
         //|> Seq.map fst
 
-    /// What the content of a tool manifest says of paket: the version it declares, if any, and
+    /// The paket tool that a tool manifest declares
+    type ManifestPaket = {
+        Version: string
+        /// "rollForward": true, as `dotnet tool install --allow-roll-forward` writes it, for which
+        /// `dotnet tool run` runs the tool with --roll-forward Major
+        RollForward: bool
+    }
+
+    /// What the content of a tool manifest says of paket: the tool it declares, if any, and
     /// whether it is "isRoot", which dotnet doesn't look above
     let paketOfToolManifest (content: string) =
         let options = System.Text.RegularExpressions.RegexOptions.IgnoreCase
-        let paketVersion =
-            System.Text.RegularExpressions.Regex.Match(content, "\"paket\"\\s*:\\s*\\{[^}]*?\"version\"\\s*:\\s*\"([^\"]+)\"", options)
+        let paket =
+            System.Text.RegularExpressions.Regex.Matches(content, "\"paket\"\\s*:\\s*\\{([^}]*)\\}", options)
+            |> Seq.cast<System.Text.RegularExpressions.Match>
+            // the first "paket" object that has a version, as a "paket" property of another tool, which dotnet
+            // ignores, has none
+            |> Seq.tryPick (fun paketTool ->
+                let tool = paketTool.Groups.[1].Value
+                let version = System.Text.RegularExpressions.Regex.Match(tool, "\"version\"\\s*:\\s*\"([^\"]+)\"", options)
+                if not version.Success then None else
+                Some {
+                    Version = version.Groups.[1].Value
+                    // with its case, as dotnet reads it, so that a "RollForward", which dotnet ignores, doesn't add
+                    // --roll-forward Major; the version and isRoot are matched without case, as in the zsh completion
+                    RollForward = System.Text.RegularExpressions.Regex.IsMatch(tool, "\"rollForward\"\\s*:\\s*true")
+                })
         let isRoot = System.Text.RegularExpressions.Regex.IsMatch(content, "\"isRoot\"\\s*:\\s*true", options)
-        (if paketVersion.Success then Some paketVersion.Groups.[1].Value else None), isRoot
+        paket, isRoot
 
     /// Where to look for dotnet, in order: the host that runs the script (DOTNET_HOST_PATH, the
     /// running process when it is dotnet, the root of the running runtime), then DOTNET_ROOT, the
@@ -169,6 +190,12 @@ module Logic =
         | rollForward ->
             let is (value: string) = System.String.Equals(rollForward, value, System.StringComparison.OrdinalIgnoreCase)
             { netCoreApp with RollsForwardToLaterMajor = is "Major" || is "LatestMajor" }
+
+    /// The arguments of dotnet that run a framework-dependent paket.dll, before the ones of paket: with
+    /// --roll-forward Major when rollForward, as `dotnet tool run` runs a local tool whose manifest says
+    /// "rollForward": true
+    let dotnetArguments (rollForward: bool) (paketDll: string) =
+        (if rollForward then "--roll-forward Major " else "") + $"\"%s{paketDll}\" "
 
     /// Whether one of the runtimes of a dotnet, the folders of its shared/Microsoft.NETCore.App
     /// named after their version, runs an app that asks for that Microsoft.NETCore.App. As the host,
@@ -399,20 +426,22 @@ module Logic =
     type PaketToRun =
         /// an executable: Paket installed with --tool-path, or a global tool
         | PaketExe of string
-        /// a paket.dll that dotnet runs: the local tool, or the most recent Paket .NET tool restored
-        | PaketDll of string
+        /// a paket.dll that dotnet runs: the local tool, or the most recent Paket .NET tool restored; with
+        /// --roll-forward Major when rollForward
+        | PaketDll of paketDll: string * rollForward: bool
 
     /// The Paket that #r "paket:" runs, or None when there is none, with the warnings it gives on the way.
-    /// localTool is the manifest that declares paket, with the paket.dll of its local tool or else the
-    /// message that it isn't restored. A Paket installed with --tool-path only runs without such a
-    /// manifest, as in the targets: it can be an older Paket, such as the paket.exe or bootstrapper of
-    /// Paket 11, and a warning says that it is skipped, unless it is the global tool of ~/.paket. When the
-    /// local tool isn't restored, a global tool still runs, or else the most recent Paket .NET tool
-    /// restored, with a warning that it may be another version. globalTool and restoredTool are only
-    /// looked for when needed, in that order.
+    /// localTool is the manifest that declares paket, with the paket.dll of its local tool and the
+    /// rollForward of the manifest, or else the message that it isn't restored. A Paket installed with
+    /// --tool-path only runs without such a manifest, as in the targets: it can be an older Paket, such as
+    /// the paket.exe or bootstrapper of Paket 11, and a warning says that it is skipped, unless it is the
+    /// global tool of ~/.paket. When the local tool isn't restored, a global tool still runs, or else the
+    /// most recent Paket .NET tool restored, with a warning that it may be another version; the latter runs
+    /// without the rollForward of the manifest, which is for the local tool. globalTool and restoredTool
+    /// are only looked for when needed, in that order.
     let choosePaket
             (warn: string -> unit)
-            (localTool: (string * Result<string, string>) option)
+            (localTool: (string * Result<string * bool, string>) option)
             (toolPathExe: string option)
             (isGlobalToolPath: string -> bool)
             (globalTool: unit -> string option)
@@ -430,7 +459,7 @@ module Logic =
         | _ -> ()
 
         match localTool with
-        | Some (_, Ok paketDll) -> Some (PaketDll paketDll)
+        | Some (_, Ok (paketDll, rollForward)) -> Some (PaketDll(paketDll, rollForward))
         | _ ->
 
         let insteadOfLocalTool (paket: string) =
@@ -445,7 +474,7 @@ module Logic =
         match restoredTool () with
         | Some paketDll ->
             insteadOfLocalTool "the most recent Paket .NET tool restored"
-            Some (PaketDll paketDll)
+            Some (PaketDll(paketDll, false))
         | None -> None
 
 namespace ReferenceLoading
@@ -525,7 +554,7 @@ module internal PaketHandler =
         |> Seq.map (fun frameworkFolder -> Path.Combine(frameworkFolder.FullName, "any", "paket.dll"))
         |> Seq.tryFind File.Exists
 
-    /// The first tool manifest up from the directory that has paket, with the version of paket and
+    /// The first tool manifest up from the directory that has paket, with the paket tool it declares and
     /// the folder that the manifest is for: the one of dotnet-tools.json or of its .config folder,
     /// where `dotnet tool restore` is run. As dotnet, it doesn't look above an "isRoot" manifest.
     let findLocalTool (baseDir: DirectoryInfo) =
@@ -535,8 +564,8 @@ module internal PaketHandler =
               dir.FullName, Path.Combine(dir.FullName, "dotnet-tools.json") ])
         |> Seq.filter (snd >> File.Exists)
         |> Seq.map (fun (folder, manifest) -> folder, manifest, Internals.Logic.paketOfToolManifest (File.ReadAllText manifest))
-        |> Seq.tryFind (fun (_, _, (version, isRoot)) -> Option.isSome version || isRoot)
-        |> Option.bind (fun (folder, manifest, (version, _)) -> version |> Option.map (fun version -> manifest, version, folder))
+        |> Seq.tryFind (fun (_, _, (paket, isRoot)) -> Option.isSome paket || isRoot)
+        |> Option.bind (fun (folder, manifest, (paket, _)) -> paket |> Option.map (fun paket -> manifest, paket, folder))
 
     /// The dotnetCandidates that exist, each one checked for existence once, when an enumeration
     /// first reaches it
@@ -662,11 +691,11 @@ module internal PaketHandler =
     let quoteProgram (path: string) =
         if path.Contains " " then "\"" + path + "\"" else path
 
-    /// The dotnet of findDotnet and the arguments that run a framework-dependent paket.dll; fails
-    /// when there is no dotnet
-    let dotnetCommand (dotnets: string seq) (paketDll: string) =
+    /// The dotnet of findDotnet and the arguments that run a framework-dependent paket.dll, with
+    /// --roll-forward Major when rollForward; fails when there is no dotnet
+    let dotnetCommand (dotnets: string seq) (rollForward: bool) (paketDll: string) =
         match findDotnet dotnets paketDll with
-        | Some dotnet -> dotnet, $"\"%s{paketDll}\" "
+        | Some dotnet -> dotnet, Internals.Logic.dotnetArguments rollForward paketDll
         | None ->
             failwith $"No dotnet was found to run '%s{paketDll}'. Please set DOTNET_ROOT to the folder of dotnet in the environment of the IDE or app that runs F# Interactive, or add that folder to its PATH."
 
@@ -781,26 +810,30 @@ module internal PaketHandler =
             // the folder of the script, which findLocalTool walks up from: when the manifest is for that folder,
             // findLocalTool gives the FullName that paketFolders below asks nugetPackages for, which runs once for both
             let scriptFolder = DirectoryInfo scriptDir
-            // the manifest that declares paket, with the paket.dll of its local tool or else the message that
-            // it isn't restored
+            // the manifest that declares paket, with the paket.dll of its local tool and the rollForward of the
+            // manifest, or else the message that it isn't restored
             let localTool =
                 findLocalTool scriptFolder
-                |> Option.map (fun (manifest, version, manifestFolder) ->
-                    manifest,
-                    match paketDllOfToolResolverCache version with
-                    | Some paketDll -> Ok paketDll
-                    | None ->
-                    // else where `dotnet tool restore` restores it when run in the folder of the manifest, or
-                    // where it was restored with another dotnet home folder
+                |> Option.map (fun (manifest, paket, manifestFolder) ->
+                    let version = paket.Version
+                    // where `dotnet tool restore` restores it when run in the folder of the manifest, or where it was
+                    // restored with another dotnet home folder, only looked for when the cache doesn't have it
                     let versionFolders =
-                        paketFoldersOfNuGetPackages nugetPackages manifestFolder
-                        |> List.map (fun paketFolder -> Path.Combine(paketFolder, version.ToLowerInvariant()))
-                    // a folder that can't be read doesn't stop the lookup in the next one
-                    match versionFolders |> List.tryPick (fun folder -> try tryFindToolDll (DirectoryInfo folder) with _ -> None) with
-                    | Some paketDll -> Ok paketDll
+                        lazy (
+                            paketFoldersOfNuGetPackages nugetPackages manifestFolder
+                            |> List.map (fun paketFolder -> Path.Combine(paketFolder, version.ToLowerInvariant())))
+                    let paketDll =
+                        paketDllOfToolResolverCache version
+                        |> Option.orElseWith (fun () ->
+                            // a folder that can't be read doesn't stop the lookup in the next one
+                            versionFolders.Value
+                            |> List.tryPick (fun folder -> try tryFindToolDll (DirectoryInfo folder) with _ -> None))
+                    manifest,
+                    match paketDll with
+                    | Some paketDll -> Ok(paketDll, paket.RollForward)
                     | None ->
                         let notRestoredIn =
-                            match versionFolders with
+                            match versionFolders.Value with
                             | [] -> ""
                             | folders -> " in " + (folders |> List.map (fun folder -> $"'%s{folder}'") |> String.concat " or ")
                         Error $"Paket %s{version}, the local tool of '%s{manifest}', is not restored%s{notRestoredIn}. Please run 'dotnet tool restore' in '%s{manifestFolder}'.")
@@ -836,8 +869,8 @@ module internal PaketHandler =
                 // the warnings come before dotnetCommand, which can fail
                 match Internals.Logic.choosePaket warn localTool toolPathExe isGlobalToolPath (fun () -> globalTools |> List.tryFind File.Exists) restoredTool with
                 | Some (Internals.Logic.PaketExe paketExe) -> paketExe, ""
-                | Some (Internals.Logic.PaketDll paketDll) ->
-                    try dotnetCommand dotnets.Value paketDll
+                | Some (Internals.Logic.PaketDll(paketDll, rollForward)) ->
+                    try dotnetCommand dotnets.Value rollForward paketDll
                     with e when Option.isSome notRestoredLocalTool -> failwith (withLocalToolHint e.Message)
                 | None ->
                     // restoredTool ran, which looked for paketFolders

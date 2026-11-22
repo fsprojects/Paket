@@ -60,25 +60,62 @@ module FsiExtension =
             |> Seq.toArray
         Assert.AreEqual([| "12.0.0"; "12.0.0-rc1"; "12.0.0-alpha001"; "11.0.0" |], actual)
 
+    let paketOf manifest = ReferenceLoading.Internals.Logic.paketOfToolManifest manifest
+
+    /// The paket tool of a manifest
+    let manifestPaket version rollForward : ReferenceLoading.Internals.Logic.ManifestPaket =
+        { Version = version; RollForward = rollForward }
+
     [<Test>]
     let ``a tool manifest gives the version of paket`` () =
         let manifest = """{ "version": 1, "isRoot": true, "tools": { "paket": { "version": "12.0.0", "commands": [ "paket" ] } } }"""
-        Assert.AreEqual((Some "12.0.0", true), ReferenceLoading.Internals.Logic.paketOfToolManifest manifest)
+        Assert.AreEqual((Some (manifestPaket "12.0.0" false), true), paketOf manifest)
+
+    [<Test>]
+    let ``a tool manifest gives the rollForward of paket`` () =
+        // as `dotnet tool install --allow-roll-forward` writes it
+        let manifest = """{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "paket": {
+      "version": "12.0.0",
+      "commands": [
+        "paket"
+      ],
+      "rollForward": true
+    }
+  }
+}"""
+        Assert.AreEqual((Some (manifestPaket "12.0.0" true), true), paketOf manifest)
+        Assert.AreEqual((Some (manifestPaket "12.0.0" false), true), paketOf (manifest.Replace("\"rollForward\": true", "\"rollForward\": false")))
+        // dotnet reads the property names with their case
+        Assert.AreEqual((Some (manifestPaket "12.0.0" false), true), paketOf (manifest.Replace("\"rollForward\"", "\"RollForward\"")))
+
+    [<Test>]
+    let ``the rollForward of another tool isn't the one of paket`` () =
+        let manifest = """{ "version": 1, "tools": { "paket": { "version": "12.0.0", "commands": [ "paket" ] }, "fantomas": { "version": "7.0.0", "commands": [ "fantomas" ], "rollForward": true } } }"""
+        Assert.AreEqual((Some (manifestPaket "12.0.0" false), false), paketOf manifest)
+
+    [<Test>]
+    let ``a paket property of another tool isn't the paket tool`` () =
+        let manifest = """{ "version": 1, "tools": { "fantomas": { "version": "7.0.0", "commands": [ "fantomas" ], "paket": { "enabled": true } }, "paket": { "version": "12.0.0", "commands": [ "paket" ], "rollForward": true } } }"""
+        Assert.AreEqual((Some (manifestPaket "12.0.0" true), false), paketOf manifest)
 
     [<Test>]
     let ``a command named paket of another tool isn't paket`` () =
         let manifest = """{ "version": 1, "tools": { "paket-wrapper": { "version": "1.0.0", "commands": [ "paket" ] } } }"""
-        Assert.AreEqual((None, false), ReferenceLoading.Internals.Logic.paketOfToolManifest manifest)
+        Assert.AreEqual((None, false), paketOf manifest)
 
     [<Test>]
     let ``a root tool manifest without paket stops the lookup`` () =
         let manifest = """{ "version": 1, "isRoot": true, "tools": { "fantomas": { "version": "7.0.0", "commands": [ "fantomas" ] } } }"""
-        Assert.AreEqual((None, true), ReferenceLoading.Internals.Logic.paketOfToolManifest manifest)
+        Assert.AreEqual((None, true), paketOf manifest)
 
     [<Test>]
     let ``a tool manifest that isn't the root lets the lookup go up`` () =
         let manifest = """{ "version": 1, "isRoot": false, "tools": {} }"""
-        Assert.AreEqual((None, false), ReferenceLoading.Internals.Logic.paketOfToolManifest manifest)
+        Assert.AreEqual((None, false), paketOf manifest)
 
 
     let root = System.IO.Path.GetFullPath(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "dotnet-lookup"))
@@ -254,6 +291,12 @@ module FsiExtension =
         Assert.IsFalse(rollForwardWith "" app)
         Assert.IsTrue(rollForwardWith "latestMajor" app)
         Assert.IsFalse(rollForwardWith "Minor" paketApp)
+
+    [<Test>]
+    let ``the arguments of dotnet have --roll-forward Major before the paket.dll when it rolls forward`` () =
+        let dotnetArguments = ReferenceLoading.Internals.Logic.dotnetArguments
+        Assert.AreEqual("\"/tools/paket.dll\" ", dotnetArguments false "/tools/paket.dll")
+        Assert.AreEqual("--roll-forward Major \"/tools/paket.dll\" ", dotnetArguments true "/tools/paket.dll")
 
     [<Test>]
     let ``a runtimeconfig.json without Microsoft.NETCore.App asks for none`` () =
@@ -586,7 +629,7 @@ module FsiExtension =
     [<Test>]
     let ``without a manifest that declares paket, a paket installed with --tool-path runs, else a global tool, else the most recent one restored`` () =
         let exe = ReferenceLoading.Internals.Logic.PaketExe
-        let dll = ReferenceLoading.Internals.Logic.PaketDll
+        let dll paketDll = ReferenceLoading.Internals.Logic.PaketDll(paketDll, false)
         Assert.AreEqual((Some (exe "/repo/.paket/paket"), List.empty<string>, List.empty<string>), choosePaket None (Some "/repo/.paket/paket") (Some "~/.dotnet/tools/paket") (Some "/restored/paket.dll"))
         Assert.AreEqual((Some (exe "~/.paket/paket"), List.empty<string>, List.empty<string>), choosePaket None (Some "~/.paket/paket") None None)
         Assert.AreEqual((Some (exe "~/.dotnet/tools/paket"), List.empty<string>, [ "global tool" ]), choosePaket None None (Some "~/.dotnet/tools/paket") (Some "/restored/paket.dll"))
@@ -595,8 +638,8 @@ module FsiExtension =
 
     [<Test>]
     let ``the restored local tool runs instead of a paket installed with --tool-path, with a warning unless it is the global tool of ~/.paket`` () =
-        let localTool = Some (manifest, Ok "/local/paket.dll")
-        let dll = ReferenceLoading.Internals.Logic.PaketDll
+        let localTool = Some (manifest, Ok ("/local/paket.dll", false))
+        let dll paketDll = ReferenceLoading.Internals.Logic.PaketDll(paketDll, false)
         Assert.AreEqual(
             (Some (dll "/local/paket.dll"),
              [ "Ignoring /repo/.paket/paket: '/repo/.config/dotnet-tools.json' declares paket, which runs instead. Delete it if it is an older Paket, such as the paket.exe or bootstrapper of Paket 11." ],
@@ -621,11 +664,17 @@ module FsiExtension =
              [ "global tool" ]),
             choosePaket localTool (Some "~/.paket/paket") (Some "~/.paket/paket") (Some "/restored/paket.dll"))
         Assert.AreEqual(
-            (Some (ReferenceLoading.Internals.Logic.PaketDll "/restored/paket.dll"),
+            (Some (ReferenceLoading.Internals.Logic.PaketDll("/restored/paket.dll", false)),
              [ notRestored + " Running the most recent Paket .NET tool restored instead, which may be another version." ],
              [ "global tool"; "restored tool" ]),
             choosePaket localTool None None (Some "/restored/paket.dll"))
         Assert.AreEqual((None, [ skipped ], [ "global tool"; "restored tool" ]), choosePaket localTool (Some "/repo/.paket/paket") None None)
+
+    [<Test>]
+    let ``the local tool runs with the rollForward of its manifest`` () =
+        Assert.AreEqual(
+            (Some (ReferenceLoading.Internals.Logic.PaketDll("/local/paket.dll", true)), List.empty<string>, List.empty<string>),
+            choosePaket (Some (manifest, Ok ("/local/paket.dll", true))) None None (Some "/restored/paket.dll"))
 
     [<Test>]
     let ``when no paket is found, the error asks to restore the local tool, or else gives the locations looked in, if any`` () =
