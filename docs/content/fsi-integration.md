@@ -43,9 +43,10 @@ runs it in the folder that has `.config/dotnet-tools.json` or `dotnet-tools.json
 for the local tool, as `dotnet tool restore` restores the tool there when run in
 that folder, and in the folder of the script for the most recent Paket .NET tool.
 It runs it with the first `dotnet` that has an SDK, looked for in the folders listed
-below. When no `dotnet` has an SDK, when the command fails, as with a `global.json`
-that asks for an SDK that isn't installed, or gives no folder, or when `dotnet`
-doesn't exit within 30 seconds, only `~/.nuget/packages` is looked at. Each time the
+below. When no `dotnet` has an SDK, or when the command fails, as with a
+`global.json` that asks for an SDK that isn't installed, or gives no folder, only
+`~/.nuget/packages` is looked at. A `dotnet` that doesn't exit within 30 seconds is
+stopped, and the folder that it gave until then, if any, is taken. Each time the
 script resolves its packages, the command runs at most once in each folder, and in
 no other folder after a `dotnet` that didn't exit within 30 seconds: an SDK that
 hangs delays the script by 30 seconds, not by 30 seconds for each folder.

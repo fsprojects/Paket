@@ -279,8 +279,8 @@ module Logic =
         /// the folder, or None when neither NUGET_PACKAGES nor dotnet gives one
         | Known of string option
         /// the dotnet of `dotnet nuget locals` didn't exit within 30 seconds, as with an SDK that hangs, which
-        /// would hang again
-        | TimedOut
+        /// would hang again; with the folder that its output gave until then, if any
+        | TimedOut of string option
 
     /// Process.Kill(bool) of .NET Core 3.0 and later, which kills the child processes too; null on .NET
     /// Framework
@@ -300,10 +300,11 @@ module Logic =
     /// Runs `dotnet nuget locals global-packages --list` with startInfo, which redirects its output and
     /// its errors, and tells the NuGet packages folder that it gives: Known None when the command fails,
     /// or its output has no full path, by its end or within outputTimeout milliseconds after dotnet exits.
-    /// TimedOut when dotnet doesn't exit within exitTimeout milliseconds. killsLeftOver tells whether
-    /// killProcessTree still finds the processes that dotnet started and left running once it exited, as
-    /// on Windows: the end of the output is then waited for, within outputTimeout milliseconds after dotnet
-    /// exits in all, and what keeps it open is killed if killProcessTree finds it.
+    /// TimedOut when dotnet doesn't exit within exitTimeout milliseconds, with the folder of its output until
+    /// then. killsLeftOver tells whether killProcessTree still finds the processes that dotnet started and
+    /// left running once it exited, as on Windows: the end of the output is then waited for, within
+    /// outputTimeout milliseconds after dotnet exits in all, and what keeps it open is killed if
+    /// killProcessTree finds it.
     let runNuGetLocals (killsLeftOver: bool) (exitTimeout: int) (outputTimeout: int) (startInfo: System.Diagnostics.ProcessStartInfo) =
         use p = System.Diagnostics.Process.Start startInfo
         // the folder of the line that has one, or None at the end of the output: the folder is taken
@@ -328,10 +329,11 @@ module Logic =
         let killLeftOver (wait: int) =
             if killsLeftOver && not (ended.Task.Wait wait) then killProcessTree p
         // an SDK that hangs doesn't block the script, nor stays running where processKillTree kills the
-        // process of NuGet too
+        // process of NuGet too; the folder that it gave is taken before the kill ends its output
         if not (p.WaitForExit exitTimeout) then
+            let packages = if folder.Task.IsCompleted then folder.Task.Result else None
             killProcessTree p
-            TimedOut
+            TimedOut packages
         else
         // the folder and the end of the output are waited for within outputTimeout milliseconds in all
         let exited = System.Diagnostics.Stopwatch.StartNew()
@@ -363,9 +365,9 @@ module Logic =
                     if timedOut.Value then None else
                     match nugetPackagesFolder folder with
                     | Known packages -> packages
-                    | TimedOut ->
+                    | TimedOut packages ->
                         timedOut.Value <- true
-                        None
+                        packages
                 folders.[folder] <- packages
                 packages
 
@@ -591,7 +593,8 @@ module internal PaketHandler =
     /// looked for when needed. NUGET_PACKAGES, which NuGet takes first, is taken without running dotnet,
     /// and only when it is a full path, as NuGet requires. Known None otherwise, or when dotnet doesn't
     /// tell it: there is no dotnet, the command fails, or its output has no full path, by its end or
-    /// within 5 seconds after dotnet exits. TimedOut when dotnet doesn't exit within 30 seconds.
+    /// within 5 seconds after dotnet exits. TimedOut when dotnet doesn't exit within 30 seconds, with the
+    /// folder of its output until then.
     let nugetPackagesFolder (sdkDotnet: Lazy<string option>) (folder: string) =
         match Environment.GetEnvironmentVariable "NUGET_PACKAGES" with
         | null | "" ->

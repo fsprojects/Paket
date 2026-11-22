@@ -423,7 +423,7 @@ module FsiExtension =
         try
             // what sh starts writes the file after 2 seconds, unless it is killed with sh
             let packages, elapsed = runNuGetLocalsWith [ late ] false 500 5000 "(sleep 2; echo > \"$2\") & wait"
-            Assert.AreEqual(ReferenceLoading.Internals.Logic.TimedOut, packages)
+            Assert.AreEqual(ReferenceLoading.Internals.Logic.TimedOut None, packages)
             System.Threading.Thread.Sleep(max System.TimeSpan.Zero (System.TimeSpan.FromSeconds 3. - elapsed))
             Assert.IsFalse(System.IO.File.Exists late)
         finally
@@ -446,6 +446,11 @@ module FsiExtension =
         let packages, elapsed = runNuGetLocals true 10000 30000 "exit 1"
         Assert.AreEqual(ReferenceLoading.Internals.Logic.Known None, packages)
         Assert.Less(elapsed.TotalSeconds, 15.)
+
+    [<Test>]
+    let ``dotnet nuget locals that times out keeps the folder that it gave`` () =
+        let packages, _ = runNuGetLocals false 1000 5000 "echo 'global-packages: /packages/'; sleep 5"
+        Assert.AreEqual(ReferenceLoading.Internals.Logic.TimedOut(Some "/packages/"), packages)
 
     [<Test>]
     let ``dotnet nuget locals doesn't time out when dotnet exits while a process it left running keeps its output open`` () =
@@ -495,7 +500,7 @@ module FsiExtension =
 
     [<Test>]
     let ``the NuGet packages folder is no longer asked for after dotnet nuget locals timed out`` () =
-        let nugetPackages, runs = nugetPackagesFolderOnce (fun _ -> ReferenceLoading.Internals.Logic.TimedOut)
+        let nugetPackages, runs = nugetPackagesFolderOnce (fun _ -> ReferenceLoading.Internals.Logic.TimedOut None)
         Assert.AreEqual(None, nugetPackages "/repo")
         Assert.AreEqual(None, nugetPackages "/repo/scripts")
         Assert.AreEqual(None, nugetPackages "/repo")
@@ -506,12 +511,20 @@ module FsiExtension =
         let nugetPackages, runs =
             nugetPackagesFolderOnce (function
                 | "/repo" -> ReferenceLoading.Internals.Logic.Known(Some "/packages")
-                | _ -> ReferenceLoading.Internals.Logic.TimedOut)
+                | _ -> ReferenceLoading.Internals.Logic.TimedOut None)
         Assert.AreEqual(Some "/packages", nugetPackages "/repo")
         Assert.AreEqual(None, nugetPackages "/repo/scripts")
         Assert.AreEqual(None, nugetPackages "/other")
         Assert.AreEqual(Some "/packages", nugetPackages "/repo")
         Assert.AreEqual([ "/repo"; "/repo/scripts" ], List.ofSeq runs)
+
+    [<Test>]
+    let ``the NuGet packages folder of a dotnet nuget locals that timed out is kept, and no other folder is asked for`` () =
+        let nugetPackages, runs = nugetPackagesFolderOnce (fun _ -> ReferenceLoading.Internals.Logic.TimedOut(Some "/packages"))
+        Assert.AreEqual(Some "/packages", nugetPackages "/repo")
+        Assert.AreEqual(None, nugetPackages "/repo/scripts")
+        Assert.AreEqual(Some "/packages", nugetPackages "/repo")
+        Assert.AreEqual([ "/repo" ], List.ofSeq runs)
 
     [<Test>]
     let ``the toolResolverCache gives the paket.dll that dotnet tool restore recorded for a version`` () =
