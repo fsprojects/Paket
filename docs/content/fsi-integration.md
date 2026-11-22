@@ -59,13 +59,21 @@ and the default install folders: `C:\Program Files\dotnet` (and then
 `%LocalAppData%\Microsoft\dotnet` on Windows, `/usr/local/share/dotnet`,
 `/usr/share/dotnet`, `/usr/lib/dotnet` and `/usr/lib64/dotnet` on macOS and Linux,
 and `~/.dotnet`. Paket 12 runs on .NET 10, or on a later version with a `dotnet`
-that has no .NET 10. A `dotnet` whose runtimes aren't known, such as the link
-`/usr/bin/dotnet`, comes after the ones known to have that runtime, and one without
-it is only taken when no other one may have it: its error then names the runtime
-that is missing, which you can install, or set `DOTNET_ROOT` to the folder of a
-`dotnet` that has it. When no `dotnet` is found, set `DOTNET_ROOT` to the folder of
-`dotnet` in the environment of the IDE or app that runs F# Interactive, or add that
-folder to its `PATH`.
+that has no .NET 10, unless `DOTNET_ROLL_FORWARD` says otherwise, as `Minor` and
+`Disable` do. When the manifest says `"rollForward": true` for Paket, as
+`dotnet tool install --allow-roll-forward` writes it, the local tool runs with
+`dotnet --roll-forward Major`, as `dotnet tool run` does, whatever
+`DOTNET_ROLL_FORWARD` says, even `LatestMajor`: on the major version it targets
+with a `dotnet` that has it, and on a later one with a `dotnet` that doesn't. The
+most recent Paket .NET tool restored, which runs instead when the local tool isn't
+restored, runs without `--roll-forward Major`. A `dotnet` whose runtimes aren't
+known, such as the link `/usr/bin/dotnet`, comes after the ones known to have a
+runtime that the tool runs on, and a `dotnet` known to have none is only taken when
+no other one may have such a runtime: its error then names the runtime that is
+missing, which you can install, or set `DOTNET_ROOT` to the folder of a `dotnet`
+that has it. When no `dotnet` is found, set `DOTNET_ROOT` to the folder of `dotnet`
+in the environment of the IDE or app that runs F# Interactive, or add that folder
+to its `PATH`.
 
 A Paket installed with `--tool-path` or as a global tool is an executable that finds
 .NET by itself, as any .NET app does: through `DOTNET_ROOT` or the location where
