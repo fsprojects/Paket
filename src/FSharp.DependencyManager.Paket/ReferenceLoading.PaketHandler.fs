@@ -255,9 +255,10 @@ module Logic =
             try Some(System.IO.Path.GetFullPath(System.IO.Path.Combine parts)) with _ -> None)
         |> List.distinctBy (fun folder -> if isWindows then folder.ToUpperInvariant() else folder)
 
-    /// The folder in the output of `dotnet nuget locals global-packages --list`, which is
-    /// global-packages: <folder>, or info : global-packages: <folder> before NuGet 5.5 (SDK 3.1.200).
-    /// A relative folder, or one with a character that the output couldn't encode, is left out.
+    /// The folder in the output of `dotnet nuget locals global-packages --list`, or in a line of it, which
+    /// is global-packages: <folder>, or info : global-packages: <folder> before NuGet 5.5 (SDK 3.1.200).
+    /// A relative folder, one with a character that the output couldn't encode, or one that .NET Framework
+    /// refuses in a path, is left out.
     let globalPackagesOfNuGetLocals (output: string) =
         let info = "info : "
         let prefix = "global-packages:"
@@ -268,16 +269,63 @@ module Logic =
             then Some(line.Substring(prefix.Length).Trim())
             else None)
         // U+FFFD for bytes that aren't UTF-8, as from the OEM code page of the console on Windows before
-        // 10 1909, where the SDK doesn't switch its output to UTF-8
-        |> Option.filter (fun folder -> folder.IndexOf '\uFFFD' < 0 && System.IO.Path.IsPathRooted folder)
+        // 10 1909, where the SDK doesn't switch its output to UTF-8; on .NET Framework, IsPathRooted throws on
+        // quotes, which would end F# Interactive from the output handler of runNuGetLocals
+        |> Option.filter (fun folder ->
+            folder.IndexOf '\uFFFD' < 0 && (try System.IO.Path.IsPathRooted folder with _ -> false))
 
     /// What nugetPackagesFolder tells of the NuGet packages folder of a folder
     type NuGetPackagesFolder =
         /// the folder, or None when neither NUGET_PACKAGES nor dotnet gives one
         | Known of string option
-        /// `dotnet nuget locals` didn't end within 30 seconds, or its output within 5 more seconds, as with an
-        /// SDK that hangs, which would hang again
+        /// the dotnet of `dotnet nuget locals` didn't exit within 30 seconds, as with an SDK that hangs, which
+        /// would hang again
         | TimedOut
+
+    /// Process.Kill(bool) of .NET Core 3.0 and later, which kills the child processes too; null on .NET
+    /// Framework
+    let processKillTree = typeof<System.Diagnostics.Process>.GetMethod("Kill", [| typeof<bool> |])
+
+    /// Kills a process with its child processes, as the one of NuGet that `dotnet nuget` starts, with
+    /// processKillTree; else the process only.
+    let killProcessTree (p: System.Diagnostics.Process) =
+        try
+            match processKillTree with
+            | null -> p.Kill()
+            | kill -> kill.Invoke(p, [| box true |]) |> ignore
+        with _ -> ()
+
+    /// Runs `dotnet nuget locals global-packages --list` with startInfo, which redirects its output and
+    /// its errors, and tells the NuGet packages folder that it gives: Known None when the command fails,
+    /// or its output has no full path, by its end or within outputTimeout milliseconds after dotnet exits.
+    /// TimedOut when dotnet doesn't exit within exitTimeout milliseconds.
+    let runNuGetLocals (exitTimeout: int) (outputTimeout: int) (startInfo: System.Diagnostics.ProcessStartInfo) =
+        use p = System.Diagnostics.Process.Start startInfo
+        // the folder of the line that has one, or None at the end of the output: the folder is taken
+        // without waiting for the end of an output that a process left running by dotnet keeps open
+        let folder = System.Threading.Tasks.TaskCompletionSource<string option>()
+        p.OutputDataReceived.Add(fun line ->
+            match line.Data with
+            | null -> folder.TrySetResult None |> ignore
+            | line ->
+                match globalPackagesOfNuGetLocals line with
+                | Some packages -> folder.TrySetResult(Some packages) |> ignore
+                | None -> ())
+        // both read while it runs, so that neither pipe fills up
+        p.BeginOutputReadLine()
+        p.BeginErrorReadLine()
+        // an SDK that hangs doesn't block the script, nor stays running where processKillTree kills the
+        // process of NuGet too
+        if not (p.WaitForExit exitTimeout) then
+            killProcessTree p
+            TimedOut
+        // the output of a dotnet that failed is discarded
+        elif p.ExitCode <> 0 then Known None
+        // a dotnet that exited didn't hang, even when a process it left running keeps its output open: the
+        // next folder is still asked
+        elif folder.Task.Wait outputTimeout then Known folder.Task.Result
+        // the output didn't end either
+        else Known None
 
     /// The NuGet packages folder of a folder, as nugetPackagesFolder tells it, for one resolution:
     /// nugetPackagesFolder runs at most once per folder, compared as a string, and for no other folder
@@ -516,21 +564,12 @@ module internal PaketHandler =
         // an sdk folder that can't be listed is unknown
         |> Internals.Logic.pickDotnet (fun dotnet -> try Internals.Logic.hasSdk dotnet with _ -> None)
 
-    /// Kills a process with its child processes, as the one of NuGet that `dotnet nuget` starts, on the
-    /// .NET Core 3.0 and later that has Process.Kill(bool); else the process only
-    let killProcessTree (p: System.Diagnostics.Process) =
-        try
-            match typeof<System.Diagnostics.Process>.GetMethod("Kill", [| typeof<bool> |]) with
-            | null -> p.Kill()
-            | kill -> kill.Invoke(p, [| box true |]) |> ignore
-        with _ -> ()
-
     /// The NuGet packages folder of a folder, as `dotnet nuget locals global-packages --list` gives it
     /// there from the nuget.config files, run with sdkDotnet, the dotnet of findSdkDotnet, which is only
     /// looked for when needed. NUGET_PACKAGES, which NuGet takes first, is taken without running dotnet,
     /// and only when it is a full path, as NuGet requires. Known None otherwise, or when dotnet doesn't
-    /// tell it: there is no dotnet, the command fails, or its output has no full path. TimedOut when the
-    /// command doesn't end within 30 seconds, or its output within 5 more seconds.
+    /// tell it: there is no dotnet, the command fails, or its output has no full path, by its end or
+    /// within 5 seconds after dotnet exits. TimedOut when dotnet doesn't exit within 30 seconds.
     let nugetPackagesFolder (sdkDotnet: Lazy<string option>) (folder: string) =
         match Environment.GetEnvironmentVariable "NUGET_PACKAGES" with
         | null | "" ->
@@ -562,16 +601,7 @@ module internal PaketHandler =
                         with _ -> newStartInfo ()
                     // what recent SDKs write on Windows 10 1909 and later, and elsewhere with a UTF-8 locale
                     startInfo.StandardOutputEncoding <- Text.Encoding.UTF8
-                    use p = System.Diagnostics.Process.Start startInfo
-                    // both read while it runs, so that neither pipe fills up
-                    let output = p.StandardOutput.ReadToEndAsync()
-                    p.StandardError.ReadToEndAsync() |> ignore
-                    // an SDK that hangs doesn't block the script, nor stays running
-                    if not (p.WaitForExit 30000 && output.Wait 5000) then
-                        killProcessTree p
-                        Internals.Logic.TimedOut
-                    elif p.ExitCode <> 0 then Internals.Logic.Known None
-                    else Internals.Logic.Known(Internals.Logic.globalPackagesOfNuGetLocals output.Result)
+                    Internals.Logic.runNuGetLocals 30000 5000 startInfo
                 with _ -> Internals.Logic.Known None)
             |> Option.defaultValue (Internals.Logic.Known None)
         // as NuGet, which refuses a relative one; on .NET Framework, IsPathRooted throws on quotes

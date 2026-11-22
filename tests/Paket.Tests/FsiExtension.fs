@@ -356,6 +356,83 @@ module FsiExtension =
         let globalPackages = ReferenceLoading.Internals.Logic.globalPackagesOfNuGetLocals
         Assert.AreEqual(None, globalPackages ("global-packages: " + inRoot [ "J\uFFFDr\uFFFDme"; "packages" ] + "\n"))
 
+    /// What runNuGetLocals tells of a stand-in dotnet, sh with commands and the arguments from $2, and how
+    /// long it took. The commands write in the file of $1 the process ID of the sleep they leave running,
+    /// which is killed afterwards. On Linux and macOS only.
+    let runNuGetLocalsWith (arguments: string list) exitTimeout outputTimeout (commands: string) =
+        if System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform System.Runtime.InteropServices.OSPlatform.Windows then
+            Assert.Ignore "The stand-in dotnet is a shell script"
+        let pidFile = System.IO.Path.GetTempFileName()
+        try
+            let startInfo =
+                System.Diagnostics.ProcessStartInfo(
+                    "/bin/sh",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false)
+            for argument in [ "-c"; commands; "sh"; pidFile ] @ arguments do
+                startInfo.ArgumentList.Add argument
+            let watch = System.Diagnostics.Stopwatch.StartNew()
+            let packages = ReferenceLoading.Internals.Logic.runNuGetLocals exitTimeout outputTimeout startInfo
+            packages, watch.Elapsed
+        finally
+            // which Kill(true) no longer finds once sh exited; still sh when it didn't run sleep yet
+            try
+                let sleep = System.Diagnostics.Process.GetProcessById(int ((System.IO.File.ReadAllText pidFile).Trim()))
+                match sleep.ProcessName with
+                | "sleep" | "sh" -> sleep.Kill()
+                | _ -> ()
+            with _ -> ()
+            System.IO.File.Delete pidFile
+
+    let runNuGetLocals exitTimeout outputTimeout commands =
+        runNuGetLocalsWith [] exitTimeout outputTimeout commands
+
+    [<Test>]
+    let ``dotnet nuget locals gives the folder of its output`` () =
+        let packages, _ = runNuGetLocals 10000 5000 "echo 'Welcome to .NET!'; echo 'global-packages: /packages/'"
+        Assert.AreEqual(ReferenceLoading.Internals.Logic.Known(Some "/packages/"), packages)
+
+    [<Test>]
+    let ``dotnet nuget locals gives its folder at once when a process it left running keeps its output open`` () =
+        let packages, elapsed = runNuGetLocals 10000 30000 "sleep 30 & echo $! > \"$1\"; echo 'global-packages: /packages/'"
+        Assert.AreEqual(ReferenceLoading.Internals.Logic.Known(Some "/packages/"), packages)
+        Assert.Less(elapsed.TotalSeconds, 15.)
+
+    [<Test>]
+    let ``dotnet nuget locals that fails gives no folder`` () =
+        let packages, _ = runNuGetLocals 10000 5000 "echo 'global-packages: /packages/'; exit 1"
+        Assert.AreEqual(ReferenceLoading.Internals.Logic.Known None, packages)
+
+    [<Test>]
+    let ``the output of a dotnet nuget locals that failed isn't waited for`` () =
+        let packages, elapsed = runNuGetLocals 10000 30000 "sleep 30 & echo $! > \"$1\"; exit 1"
+        Assert.AreEqual(ReferenceLoading.Internals.Logic.Known None, packages)
+        Assert.Less(elapsed.TotalSeconds, 15.)
+
+    [<Test>]
+    let ``dotnet nuget locals times out when dotnet doesn't exit, and kills it with what it started`` () =
+        let late = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "paket-nuget-locals-" + System.Guid.NewGuid().ToString "N")
+        try
+            // what sh starts writes the file after 2 seconds, unless it is killed with sh
+            let packages, elapsed = runNuGetLocalsWith [ late ] 500 5000 "(sleep 2; echo > \"$2\") & wait"
+            Assert.AreEqual(ReferenceLoading.Internals.Logic.TimedOut, packages)
+            System.Threading.Thread.Sleep(max System.TimeSpan.Zero (System.TimeSpan.FromSeconds 3. - elapsed))
+            Assert.IsFalse(System.IO.File.Exists late)
+        finally
+            System.IO.File.Delete late
+
+    [<Test>]
+    let ``dotnet nuget locals without a folder stops waiting at the end of its output`` () =
+        let packages, elapsed = runNuGetLocals 10000 30000 "echo 'Welcome to .NET!'"
+        Assert.AreEqual(ReferenceLoading.Internals.Logic.Known None, packages)
+        Assert.Less(elapsed.TotalSeconds, 15.)
+
+    [<Test>]
+    let ``dotnet nuget locals doesn't time out when dotnet exits while a process it left running keeps its output open`` () =
+        let packages, _ = runNuGetLocals 10000 500 "sleep 30 & echo $! > \"$1\"; echo 'Welcome to .NET!'"
+        Assert.AreEqual(ReferenceLoading.Internals.Logic.Known None, packages)
+
     /// The function of nugetPackagesFolderOnce, with the folders it ran nugetPackagesFolder for
     let nugetPackagesFolderOnce (nugetPackagesFolder: string -> ReferenceLoading.Internals.Logic.NuGetPackagesFolder) =
         let runs = ResizeArray()
@@ -376,7 +453,7 @@ module FsiExtension =
         Assert.AreEqual([ "/repo"; "/repo/scripts" ], List.ofSeq runs)
 
     [<Test>]
-    let ``the NuGet packages folder is no longer asked for after dotnet nuget locals took too long`` () =
+    let ``the NuGet packages folder is no longer asked for after dotnet nuget locals timed out`` () =
         let nugetPackages, runs = nugetPackagesFolderOnce (fun _ -> ReferenceLoading.Internals.Logic.TimedOut)
         Assert.AreEqual(None, nugetPackages "/repo")
         Assert.AreEqual(None, nugetPackages "/repo/scripts")
