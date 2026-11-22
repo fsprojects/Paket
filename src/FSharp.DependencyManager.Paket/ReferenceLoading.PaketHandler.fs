@@ -255,9 +255,10 @@ module Logic =
             try Some(System.IO.Path.GetFullPath(System.IO.Path.Combine parts)) with _ -> None)
         |> List.distinctBy (fun folder -> if isWindows then folder.ToUpperInvariant() else folder)
 
-    /// The folder in the output of `dotnet nuget locals global-packages --list`, which is
-    /// global-packages: <folder>, or info : global-packages: <folder> before NuGet 5.5 (SDK 3.1.200).
-    /// A relative folder, or one with a character that the output couldn't encode, is left out.
+    /// The folder in the output of `dotnet nuget locals global-packages --list`, or in a line of it, which
+    /// is global-packages: <folder>, or info : global-packages: <folder> before NuGet 5.5 (SDK 3.1.200).
+    /// A relative folder, one with a character that the output couldn't encode, or one that .NET Framework
+    /// refuses in a path, is left out.
     let globalPackagesOfNuGetLocals (output: string) =
         let info = "info : "
         let prefix = "global-packages:"
@@ -268,8 +269,107 @@ module Logic =
             then Some(line.Substring(prefix.Length).Trim())
             else None)
         // U+FFFD for bytes that aren't UTF-8, as from the OEM code page of the console on Windows before
-        // 10 1909, where the SDK doesn't switch its output to UTF-8
-        |> Option.filter (fun folder -> folder.IndexOf '\uFFFD' < 0 && System.IO.Path.IsPathRooted folder)
+        // 10 1909, where the SDK doesn't switch its output to UTF-8; on .NET Framework, IsPathRooted throws on
+        // quotes, which would end F# Interactive from the output handler of runNuGetLocals
+        |> Option.filter (fun folder ->
+            folder.IndexOf '\uFFFD' < 0 && (try System.IO.Path.IsPathRooted folder with _ -> false))
+
+    /// What nugetPackagesFolder tells of the NuGet packages folder of a folder
+    type NuGetPackagesFolder =
+        /// the folder, or None when neither NUGET_PACKAGES nor dotnet gives one
+        | Known of string option
+        /// the dotnet of `dotnet nuget locals` didn't exit within 30 seconds, as with an SDK that hangs, which
+        /// would hang again; with the folder that its output gave until then, if any
+        | TimedOut of string option
+
+    /// Process.Kill(bool) of .NET Core 3.0 and later, which kills the child processes too; null on .NET
+    /// Framework
+    let processKillTree = typeof<System.Diagnostics.Process>.GetMethod("Kill", [| typeof<bool> |])
+
+    /// Kills a process with its child processes, as the one of NuGet that `dotnet nuget` starts, with
+    /// processKillTree; else the process only. Once the process exited, only processKillTree on Windows
+    /// still finds the processes that it started, from its handle, and theirs through the ones that still
+    /// run: on Linux and macOS it no longer looks for them, and on .NET Framework Kill() fails.
+    let killProcessTree (p: System.Diagnostics.Process) =
+        try
+            match processKillTree with
+            | null -> p.Kill()
+            | kill -> kill.Invoke(p, [| box true |]) |> ignore
+        with _ -> ()
+
+    /// Runs `dotnet nuget locals global-packages --list` with startInfo, which redirects its output and
+    /// its errors, and tells the NuGet packages folder that it gives: Known None when the command fails,
+    /// or its output has no full path, by its end or within outputTimeout milliseconds after dotnet exits.
+    /// TimedOut when dotnet doesn't exit within exitTimeout milliseconds, with the folder of its output until
+    /// then. killsLeftOver tells whether killProcessTree still finds the processes that dotnet started and
+    /// left running once it exited, as on Windows: the end of the output is then waited for, within
+    /// outputTimeout milliseconds after dotnet exits in all, and what keeps it open is killed if
+    /// killProcessTree finds it.
+    let runNuGetLocals (killsLeftOver: bool) (exitTimeout: int) (outputTimeout: int) (startInfo: System.Diagnostics.ProcessStartInfo) =
+        use p = System.Diagnostics.Process.Start startInfo
+        // the folder of the line that has one, or None at the end of the output: the folder is taken
+        // without waiting for the end of an output that a process left running by dotnet keeps open
+        let folder = System.Threading.Tasks.TaskCompletionSource<string option>()
+        let ended = System.Threading.Tasks.TaskCompletionSource<bool>()
+        p.OutputDataReceived.Add(fun line ->
+            match line.Data with
+            | null ->
+                folder.TrySetResult None |> ignore
+                ended.TrySetResult true |> ignore
+            | line ->
+                match globalPackagesOfNuGetLocals line with
+                | Some packages -> folder.TrySetResult(Some packages) |> ignore
+                | None -> ())
+        // both read while it runs, so that neither pipe fills up
+        p.BeginOutputReadLine()
+        p.BeginErrorReadLine()
+        // a process that the dotnet that exited left running, and that keeps its output open, is killed
+        // where killProcessTree still finds it, the only place where the end of the output is waited for
+        // after a failure or a folder
+        let killLeftOver (wait: int) =
+            if killsLeftOver && not (ended.Task.Wait wait) then killProcessTree p
+        // an SDK that hangs doesn't block the script, nor stays running where processKillTree kills the
+        // process of NuGet too; the folder that it gave is taken before the kill ends its output
+        if not (p.WaitForExit exitTimeout) then
+            let packages = if folder.Task.IsCompleted then folder.Task.Result else None
+            killProcessTree p
+            TimedOut packages
+        else
+        // the folder and the end of the output are waited for within outputTimeout milliseconds in all
+        let exited = System.Diagnostics.Stopwatch.StartNew()
+        // the output of a dotnet that failed is discarded
+        if p.ExitCode <> 0 then
+            killLeftOver outputTimeout
+            Known None
+        // a dotnet that exited didn't hang, even when a process it left running keeps its output open: the
+        // next folder is still asked
+        elif folder.Task.Wait outputTimeout then
+            killLeftOver (max 0 (outputTimeout - int exited.ElapsedMilliseconds))
+            Known folder.Task.Result
+        else
+            // the output didn't end either
+            killLeftOver 0
+            Known None
+
+    /// The NuGet packages folder of a folder, as nugetPackagesFolder tells it, for one resolution:
+    /// nugetPackagesFolder runs at most once per folder, compared as a string, and for no other folder
+    /// after a run that timed out: a folder not asked before it is then None.
+    let nugetPackagesFolderOnce (nugetPackagesFolder: string -> NuGetPackagesFolder) =
+        let folders = System.Collections.Generic.Dictionary<string, string option>()
+        let timedOut = ref false
+        fun (folder: string) ->
+            match folders.TryGetValue folder with
+            | true, packages -> packages
+            | false, _ ->
+                let packages =
+                    if timedOut.Value then None else
+                    match nugetPackagesFolder folder with
+                    | Known packages -> packages
+                    | TimedOut packages ->
+                        timedOut.Value <- true
+                        packages
+                folders.[folder] <- packages
+                packages
 
     /// Where a global tool of paket is, in ~/.dotnet/tools and then ~/.paket. None without a user profile,
     /// and not relative to the current folder when HOME is empty. A path with characters that .NET Framework
@@ -438,7 +538,8 @@ module internal PaketHandler =
         |> Seq.tryFind (fun (_, _, (version, isRoot)) -> Option.isSome version || isRoot)
         |> Option.bind (fun (folder, manifest, (version, _)) -> version |> Option.map (fun version -> manifest, version, folder))
 
-    /// The dotnetCandidates that exist
+    /// The dotnetCandidates that exist, each one checked for existence once, when an enumeration
+    /// first reaches it
     let existingDotnets () =
         let processPath =
             try
@@ -456,11 +557,12 @@ module internal PaketHandler =
             (Environment.GetFolderPath Environment.SpecialFolder.ProgramFiles)
             userProfile
         |> Seq.filter File.Exists
+        |> Seq.cache
 
-    /// The dotnet to run a framework-dependent paket.dll: of the dotnetCandidates that exist, the one
+    /// The dotnet to run a framework-dependent paket.dll: of the dotnets of existingDotnets, the one
     /// that pickDotnet picks for the Microsoft.NETCore.App that its runtimeconfig.json asks for, with
     /// the DOTNET_ROLL_FORWARD of the environment
-    let findDotnet (paketDll: string) =
+    let findDotnet (dotnets: string seq) (paketDll: string) =
         let netCoreApp =
             try
                 Path.ChangeExtension(paketDll, ".runtimeconfig.json")
@@ -476,30 +578,28 @@ module internal PaketHandler =
                     Internals.Logic.runtimesOfDotnet dotnet
                     |> Option.map (Internals.Logic.runsApp netCoreApp)
                 with _ -> None
-        existingDotnets ()
+        dotnets
         |> Internals.Logic.pickDotnet runsPaket
 
-    /// Kills a process with its child processes, as the one of NuGet that `dotnet nuget` starts, on the
-    /// .NET Core 3.0 and later that has Process.Kill(bool); else the process only
-    let killProcessTree (p: System.Diagnostics.Process) =
-        try
-            match typeof<System.Diagnostics.Process>.GetMethod("Kill", [| typeof<bool> |]) with
-            | null -> p.Kill()
-            | kill -> kill.Invoke(p, [| box true |]) |> ignore
-        with _ -> ()
+    /// The dotnet to run `dotnet nuget`: of the dotnets of existingDotnets, the one that pickDotnet picks
+    /// with hasSdk
+    let findSdkDotnet (dotnets: string seq) =
+        dotnets
+        // an sdk folder that can't be listed is unknown
+        |> Internals.Logic.pickDotnet (fun dotnet -> try Internals.Logic.hasSdk dotnet with _ -> None)
 
     /// The NuGet packages folder of a folder, as `dotnet nuget locals global-packages --list` gives it
-    /// there from the nuget.config files, run with the dotnet that pickDotnet picks with hasSdk.
-    /// NUGET_PACKAGES, which NuGet takes first, is taken without running dotnet, and only when it is a
-    /// full path, as NuGet requires. None otherwise, or when dotnet doesn't tell it: there is none, or
-    /// the command fails or takes more than 30 seconds.
-    let nugetPackagesFolder (folder: string) =
+    /// there from the nuget.config files, run with sdkDotnet, the dotnet of findSdkDotnet, which is only
+    /// looked for when needed. NUGET_PACKAGES, which NuGet takes first, is taken without running dotnet,
+    /// and only when it is a full path, as NuGet requires. Known None otherwise, or when dotnet doesn't
+    /// tell it: there is no dotnet, the command fails, or its output has no full path, by its end or
+    /// within 5 seconds after dotnet exits. TimedOut when dotnet doesn't exit within 30 seconds, with the
+    /// folder of its output until then.
+    let nugetPackagesFolder (sdkDotnet: Lazy<string option>) (folder: string) =
         match Environment.GetEnvironmentVariable "NUGET_PACKAGES" with
         | null | "" ->
-            existingDotnets ()
-            // an sdk folder that can't be listed is unknown
-            |> Internals.Logic.pickDotnet (fun dotnet -> try Internals.Logic.hasSdk dotnet with _ -> None)
-            |> Option.bind (fun dotnet ->
+            sdkDotnet.Value
+            |> Option.map (fun dotnet ->
                 try
                     let newStartInfo () =
                         System.Diagnostics.ProcessStartInfo(
@@ -526,26 +626,19 @@ module internal PaketHandler =
                         with _ -> newStartInfo ()
                     // what recent SDKs write on Windows 10 1909 and later, and elsewhere with a UTF-8 locale
                     startInfo.StandardOutputEncoding <- Text.Encoding.UTF8
-                    use p = System.Diagnostics.Process.Start startInfo
-                    // both read while it runs, so that neither pipe fills up
-                    let output = p.StandardOutput.ReadToEndAsync()
-                    p.StandardError.ReadToEndAsync() |> ignore
-                    // an SDK that hangs doesn't block the script, nor stays running
-                    if not (p.WaitForExit 30000 && output.Wait 5000) then
-                        killProcessTree p
-                        None
-                    elif p.ExitCode <> 0 then None
-                    else Internals.Logic.globalPackagesOfNuGetLocals output.Result
-                with _ -> None)
+                    let killsLeftOver = isWindows && not (isNull Internals.Logic.processKillTree)
+                    Internals.Logic.runNuGetLocals killsLeftOver 30000 5000 startInfo
+                with _ -> Internals.Logic.Known None)
+            |> Option.defaultValue (Internals.Logic.Known None)
         // as NuGet, which refuses a relative one; on .NET Framework, IsPathRooted throws on quotes
-        | folder when (try Path.IsPathRooted folder with _ -> false) -> Some folder
-        | _ -> None
+        | folder when (try Path.IsPathRooted folder with _ -> false) -> Internals.Logic.Known(Some folder)
+        | _ -> Internals.Logic.Known None
 
-    /// The folders of the Paket .NET tool in the NuGet packages folders of a folder: the one of
-    /// nugetPackagesFolder, then the one of ~/.nuget/packages, for a tool restored from another folder
-    /// or when nugetPackagesFolder gives none
-    let paketFoldersOfNuGetPackages (folder: string) =
-        Internals.Logic.paketFolders isWindows (nugetPackagesFolder folder) userProfile
+    /// The folders of the Paket .NET tool in the NuGet packages folders of a folder: the one that
+    /// nugetPackages gives, then the one of ~/.nuget/packages, for a tool restored from another folder
+    /// or when nugetPackages gives none. nugetPackages is the nugetPackagesFolderOnce of the resolution.
+    let paketFoldersOfNuGetPackages (nugetPackages: string -> string option) (folder: string) =
+        Internals.Logic.paketFolders isWindows (nugetPackages folder) userProfile
 
     /// The paket.dll of a version of the local tool that `dotnet tool run` runs: the one that
     /// `dotnet tool restore` recorded in the toolResolverCache of the dotnet home folder, DOTNET_CLI_HOME
@@ -571,8 +664,8 @@ module internal PaketHandler =
 
     /// The dotnet of findDotnet and the arguments that run a framework-dependent paket.dll; fails
     /// when there is no dotnet
-    let dotnetCommand (paketDll: string) =
-        match findDotnet paketDll with
+    let dotnetCommand (dotnets: string seq) (paketDll: string) =
+        match findDotnet dotnets paketDll with
         | Some dotnet -> dotnet, $"\"%s{paketDll}\" "
         | None ->
             failwith $"No dotnet was found to run '%s{paketDll}'. Please set DOTNET_ROOT to the folder of dotnet in the environment of the IDE or app that runs F# Interactive, or add that folder to its PATH."
@@ -678,10 +771,20 @@ module internal PaketHandler =
                 Console.ResetColor()
                 Console.WriteLine(" " + message)
             let warn = writeLine ConsoleColor.Yellow
+            // looked for once, when needed: the dotnets, both for the one that runs a paket.dll and for the one
+            // with an SDK that `dotnet nuget locals` needs
+            let dotnets = lazy (existingDotnets ())
+            let sdkDotnet = lazy (findSdkDotnet dotnets.Value)
+            // the folder of the manifest is often the folder of the script: `dotnet nuget locals` runs at most once
+            // per folder, and in no other folder after a run that timed out, as the same dotnet would hang again
+            let nugetPackages = Internals.Logic.nugetPackagesFolderOnce (nugetPackagesFolder sdkDotnet)
+            // the folder of the script, which findLocalTool walks up from: when the manifest is for that folder,
+            // findLocalTool gives the FullName that paketFolders below asks nugetPackages for, which runs once for both
+            let scriptFolder = DirectoryInfo scriptDir
             // the manifest that declares paket, with the paket.dll of its local tool or else the message that
             // it isn't restored
             let localTool =
-                findLocalTool (DirectoryInfo scriptDir)
+                findLocalTool scriptFolder
                 |> Option.map (fun (manifest, version, manifestFolder) ->
                     manifest,
                     match paketDllOfToolResolverCache version with
@@ -690,7 +793,7 @@ module internal PaketHandler =
                     // else where `dotnet tool restore` restores it when run in the folder of the manifest, or
                     // where it was restored with another dotnet home folder
                     let versionFolders =
-                        paketFoldersOfNuGetPackages manifestFolder
+                        paketFoldersOfNuGetPackages nugetPackages manifestFolder
                         |> List.map (fun paketFolder -> Path.Combine(paketFolder, version.ToLowerInvariant()))
                     // a folder that can't be read doesn't stop the lookup in the next one
                     match versionFolders |> List.tryPick (fun folder -> try tryFindToolDll (DirectoryInfo folder) with _ -> None) with
@@ -711,11 +814,11 @@ module internal PaketHandler =
                 | None -> message
 
             // we try to resolve paket installed with --tool-path any place up in the folder structure from current script
-            let toolPathExe = findPaketExe prioritizedSearchPaths (DirectoryInfo scriptDir)
+            let toolPathExe = findPaketExe prioritizedSearchPaths scriptFolder
 
             let globalTools = Internals.Logic.globalToolPaths toolPathExecutable userProfile
 
-            let paketFolders = lazy (paketFoldersOfNuGetPackages scriptDir)
+            let paketFolders = lazy (paketFoldersOfNuGetPackages nugetPackages scriptFolder.FullName)
             // the newest Paket .NET tool restored in the NuGet packages folders
             let restoredTool () =
                 paketFolders.Value
@@ -734,7 +837,7 @@ module internal PaketHandler =
                 match Internals.Logic.choosePaket warn localTool toolPathExe isGlobalToolPath (fun () -> globalTools |> List.tryFind File.Exists) restoredTool with
                 | Some (Internals.Logic.PaketExe paketExe) -> paketExe, ""
                 | Some (Internals.Logic.PaketDll paketDll) ->
-                    try dotnetCommand paketDll
+                    try dotnetCommand dotnets.Value paketDll
                     with e when Option.isSome notRestoredLocalTool -> failwith (withLocalToolHint e.Message)
                 | None ->
                     // restoredTool ran, which looked for paketFolders
