@@ -358,8 +358,9 @@ module FsiExtension =
 
     /// What runNuGetLocals tells of a stand-in dotnet, sh with commands and the arguments from $2, and how
     /// long it took. The commands write in the file of $1 the process ID of the sleep they leave running,
-    /// which is killed afterwards. On Linux and macOS only.
-    let runNuGetLocalsWith (arguments: string list) exitTimeout outputTimeout (commands: string) =
+    /// which is killed afterwards. On Linux and macOS only, where killsLeftOver true acts as on Windows, but
+    /// kills nothing.
+    let runNuGetLocalsWith (arguments: string list) killsLeftOver exitTimeout outputTimeout (commands: string) =
         if System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform System.Runtime.InteropServices.OSPlatform.Windows then
             Assert.Ignore "The stand-in dotnet is a shell script"
         let pidFile = System.IO.Path.GetTempFileName()
@@ -373,7 +374,7 @@ module FsiExtension =
             for argument in [ "-c"; commands; "sh"; pidFile ] @ arguments do
                 startInfo.ArgumentList.Add argument
             let watch = System.Diagnostics.Stopwatch.StartNew()
-            let packages = ReferenceLoading.Internals.Logic.runNuGetLocals exitTimeout outputTimeout startInfo
+            let packages = ReferenceLoading.Internals.Logic.runNuGetLocals killsLeftOver exitTimeout outputTimeout startInfo
             packages, watch.Elapsed
         finally
             // which Kill(true) no longer finds once sh exited; still sh when it didn't run sleep yet
@@ -385,37 +386,43 @@ module FsiExtension =
             with _ -> ()
             System.IO.File.Delete pidFile
 
-    let runNuGetLocals exitTimeout outputTimeout commands =
-        runNuGetLocalsWith [] exitTimeout outputTimeout commands
+    let runNuGetLocals killsLeftOver exitTimeout outputTimeout commands =
+        runNuGetLocalsWith [] killsLeftOver exitTimeout outputTimeout commands
 
     [<Test>]
     let ``dotnet nuget locals gives the folder of its output`` () =
-        let packages, _ = runNuGetLocals 10000 5000 "echo 'Welcome to .NET!'; echo 'global-packages: /packages/'"
+        let packages, _ = runNuGetLocals false 10000 5000 "echo 'Welcome to .NET!'; echo 'global-packages: /packages/'"
         Assert.AreEqual(ReferenceLoading.Internals.Logic.Known(Some "/packages/"), packages)
 
     [<Test>]
     let ``dotnet nuget locals gives its folder at once when a process it left running keeps its output open`` () =
-        let packages, elapsed = runNuGetLocals 10000 30000 "sleep 30 & echo $! > \"$1\"; echo 'global-packages: /packages/'"
+        let packages, elapsed = runNuGetLocals false 10000 30000 "sleep 30 & echo $! > \"$1\"; echo 'global-packages: /packages/'"
         Assert.AreEqual(ReferenceLoading.Internals.Logic.Known(Some "/packages/"), packages)
         Assert.Less(elapsed.TotalSeconds, 15.)
 
     [<Test>]
     let ``dotnet nuget locals that fails gives no folder`` () =
-        let packages, _ = runNuGetLocals 10000 5000 "echo 'global-packages: /packages/'; exit 1"
+        let packages, _ = runNuGetLocals false 10000 5000 "echo 'global-packages: /packages/'; exit 1"
         Assert.AreEqual(ReferenceLoading.Internals.Logic.Known None, packages)
 
     [<Test>]
-    let ``the output of a dotnet nuget locals that failed isn't waited for`` () =
-        let packages, elapsed = runNuGetLocals 10000 30000 "sleep 30 & echo $! > \"$1\"; exit 1"
+    let ``the output of a dotnet nuget locals that failed isn't waited for where what it left running can't be killed`` () =
+        let packages, elapsed = runNuGetLocals false 10000 30000 "sleep 30 & echo $! > \"$1\"; exit 1"
         Assert.AreEqual(ReferenceLoading.Internals.Logic.Known None, packages)
         Assert.Less(elapsed.TotalSeconds, 15.)
+
+    [<Test>]
+    let ``the output of a dotnet nuget locals that failed is waited for where it kills what keeps it open`` () =
+        let packages, elapsed = runNuGetLocals true 10000 1000 "sleep 30 & echo $! > \"$1\"; exit 1"
+        Assert.AreEqual(ReferenceLoading.Internals.Logic.Known None, packages)
+        Assert.GreaterOrEqual(elapsed.TotalSeconds, 0.9)
 
     [<Test>]
     let ``dotnet nuget locals times out when dotnet doesn't exit, and kills it with what it started`` () =
         let late = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "paket-nuget-locals-" + System.Guid.NewGuid().ToString "N")
         try
             // what sh starts writes the file after 2 seconds, unless it is killed with sh
-            let packages, elapsed = runNuGetLocalsWith [ late ] 500 5000 "(sleep 2; echo > \"$2\") & wait"
+            let packages, elapsed = runNuGetLocalsWith [ late ] false 500 5000 "(sleep 2; echo > \"$2\") & wait"
             Assert.AreEqual(ReferenceLoading.Internals.Logic.TimedOut, packages)
             System.Threading.Thread.Sleep(max System.TimeSpan.Zero (System.TimeSpan.FromSeconds 3. - elapsed))
             Assert.IsFalse(System.IO.File.Exists late)
@@ -424,14 +431,48 @@ module FsiExtension =
 
     [<Test>]
     let ``dotnet nuget locals without a folder stops waiting at the end of its output`` () =
-        let packages, elapsed = runNuGetLocals 10000 30000 "echo 'Welcome to .NET!'"
+        let packages, elapsed = runNuGetLocals false 10000 30000 "echo 'Welcome to .NET!'"
+        Assert.AreEqual(ReferenceLoading.Internals.Logic.Known None, packages)
+        Assert.Less(elapsed.TotalSeconds, 15.)
+
+    [<Test>]
+    let ``dotnet nuget locals stops waiting at the end of its output where it kills what keeps it open`` () =
+        let packages, elapsed = runNuGetLocals true 10000 30000 "echo 'global-packages: /packages/'"
+        Assert.AreEqual(ReferenceLoading.Internals.Logic.Known(Some "/packages/"), packages)
+        Assert.Less(elapsed.TotalSeconds, 15.)
+
+    [<Test>]
+    let ``dotnet nuget locals that failed stops waiting at the end of its output where it kills what keeps it open`` () =
+        let packages, elapsed = runNuGetLocals true 10000 30000 "exit 1"
         Assert.AreEqual(ReferenceLoading.Internals.Logic.Known None, packages)
         Assert.Less(elapsed.TotalSeconds, 15.)
 
     [<Test>]
     let ``dotnet nuget locals doesn't time out when dotnet exits while a process it left running keeps its output open`` () =
-        let packages, _ = runNuGetLocals 10000 500 "sleep 30 & echo $! > \"$1\"; echo 'Welcome to .NET!'"
+        let packages, _ = runNuGetLocals false 10000 500 "sleep 30 & echo $! > \"$1\"; echo 'Welcome to .NET!'"
         Assert.AreEqual(ReferenceLoading.Internals.Logic.Known None, packages)
+
+    [<Test>]
+    let ``dotnet nuget locals keeps its folder where it waits for the end of its output to kill what keeps it open`` () =
+        let packages, elapsed = runNuGetLocals true 10000 1000 "sleep 30 & echo $! > \"$1\"; echo 'global-packages: /packages/'"
+        Assert.AreEqual(ReferenceLoading.Internals.Logic.Known(Some "/packages/"), packages)
+        Assert.GreaterOrEqual(elapsed.TotalSeconds, 0.9)
+
+    [<Test>]
+    let ``dotnet nuget locals waits for its folder and the end of its output once in all after dotnet exits where it kills what keeps it open`` () =
+        // the folder that comes 1 second after sh exits, from what it left running
+        let packages, elapsed =
+            runNuGetLocals true 10000 2000 "(sleep 1; echo 'global-packages: /packages/'; exec sleep 30) & echo $! > \"$1\""
+        Assert.AreEqual(ReferenceLoading.Internals.Logic.Known(Some "/packages/"), packages)
+        // and not 2 more seconds after the folder
+        Assert.Less(elapsed.TotalSeconds, 2.9)
+
+    [<Test>]
+    let ``dotnet nuget locals without a folder waits once for the end of its output to kill what keeps it open`` () =
+        let packages, elapsed = runNuGetLocals true 10000 2000 "sleep 30 & echo $! > \"$1\"; echo 'Welcome to .NET!'"
+        Assert.AreEqual(ReferenceLoading.Internals.Logic.Known None, packages)
+        // and not once more after the 2 seconds without its folder
+        Assert.Less(elapsed.TotalSeconds, 3.5)
 
     /// The function of nugetPackagesFolderOnce, with the folders it ran nugetPackagesFolder for
     let nugetPackagesFolderOnce (nugetPackagesFolder: string -> ReferenceLoading.Internals.Logic.NuGetPackagesFolder) =

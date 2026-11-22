@@ -287,7 +287,9 @@ module Logic =
     let processKillTree = typeof<System.Diagnostics.Process>.GetMethod("Kill", [| typeof<bool> |])
 
     /// Kills a process with its child processes, as the one of NuGet that `dotnet nuget` starts, with
-    /// processKillTree; else the process only.
+    /// processKillTree; else the process only. Once the process exited, only processKillTree on Windows
+    /// still finds the processes that it started, from its handle, and theirs through the ones that still
+    /// run: on Linux and macOS it no longer looks for them, and on .NET Framework Kill() fails.
     let killProcessTree (p: System.Diagnostics.Process) =
         try
             match processKillTree with
@@ -298,15 +300,21 @@ module Logic =
     /// Runs `dotnet nuget locals global-packages --list` with startInfo, which redirects its output and
     /// its errors, and tells the NuGet packages folder that it gives: Known None when the command fails,
     /// or its output has no full path, by its end or within outputTimeout milliseconds after dotnet exits.
-    /// TimedOut when dotnet doesn't exit within exitTimeout milliseconds.
-    let runNuGetLocals (exitTimeout: int) (outputTimeout: int) (startInfo: System.Diagnostics.ProcessStartInfo) =
+    /// TimedOut when dotnet doesn't exit within exitTimeout milliseconds. killsLeftOver tells whether
+    /// killProcessTree still finds the processes that dotnet started and left running once it exited, as
+    /// on Windows: the end of the output is then waited for, within outputTimeout milliseconds after dotnet
+    /// exits in all, and what keeps it open is killed if killProcessTree finds it.
+    let runNuGetLocals (killsLeftOver: bool) (exitTimeout: int) (outputTimeout: int) (startInfo: System.Diagnostics.ProcessStartInfo) =
         use p = System.Diagnostics.Process.Start startInfo
         // the folder of the line that has one, or None at the end of the output: the folder is taken
         // without waiting for the end of an output that a process left running by dotnet keeps open
         let folder = System.Threading.Tasks.TaskCompletionSource<string option>()
+        let ended = System.Threading.Tasks.TaskCompletionSource<bool>()
         p.OutputDataReceived.Add(fun line ->
             match line.Data with
-            | null -> folder.TrySetResult None |> ignore
+            | null ->
+                folder.TrySetResult None |> ignore
+                ended.TrySetResult true |> ignore
             | line ->
                 match globalPackagesOfNuGetLocals line with
                 | Some packages -> folder.TrySetResult(Some packages) |> ignore
@@ -314,18 +322,32 @@ module Logic =
         // both read while it runs, so that neither pipe fills up
         p.BeginOutputReadLine()
         p.BeginErrorReadLine()
+        // a process that the dotnet that exited left running, and that keeps its output open, is killed
+        // where killProcessTree still finds it, the only place where the end of the output is waited for
+        // after a failure or a folder
+        let killLeftOver (wait: int) =
+            if killsLeftOver && not (ended.Task.Wait wait) then killProcessTree p
         // an SDK that hangs doesn't block the script, nor stays running where processKillTree kills the
         // process of NuGet too
         if not (p.WaitForExit exitTimeout) then
             killProcessTree p
             TimedOut
+        else
+        // the folder and the end of the output are waited for within outputTimeout milliseconds in all
+        let exited = System.Diagnostics.Stopwatch.StartNew()
         // the output of a dotnet that failed is discarded
-        elif p.ExitCode <> 0 then Known None
+        if p.ExitCode <> 0 then
+            killLeftOver outputTimeout
+            Known None
         // a dotnet that exited didn't hang, even when a process it left running keeps its output open: the
         // next folder is still asked
-        elif folder.Task.Wait outputTimeout then Known folder.Task.Result
-        // the output didn't end either
-        else Known None
+        elif folder.Task.Wait outputTimeout then
+            killLeftOver (max 0 (outputTimeout - int exited.ElapsedMilliseconds))
+            Known folder.Task.Result
+        else
+            // the output didn't end either
+            killLeftOver 0
+            Known None
 
     /// The NuGet packages folder of a folder, as nugetPackagesFolder tells it, for one resolution:
     /// nugetPackagesFolder runs at most once per folder, compared as a string, and for no other folder
@@ -601,7 +623,8 @@ module internal PaketHandler =
                         with _ -> newStartInfo ()
                     // what recent SDKs write on Windows 10 1909 and later, and elsewhere with a UTF-8 locale
                     startInfo.StandardOutputEncoding <- Text.Encoding.UTF8
-                    Internals.Logic.runNuGetLocals 30000 5000 startInfo
+                    let killsLeftOver = isWindows && not (isNull Internals.Logic.processKillTree)
+                    Internals.Logic.runNuGetLocals killsLeftOver 30000 5000 startInfo
                 with _ -> Internals.Logic.Known None)
             |> Option.defaultValue (Internals.Logic.Known None)
         // as NuGet, which refuses a relative one; on .NET Framework, IsPathRooted throws on quotes
