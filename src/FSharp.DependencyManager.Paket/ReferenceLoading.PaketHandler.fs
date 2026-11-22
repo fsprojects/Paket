@@ -191,6 +191,12 @@ module Logic =
             let is (value: string) = System.String.Equals(rollForward, value, System.StringComparison.OrdinalIgnoreCase)
             { netCoreApp with RollsForwardToLaterMajor = is "Major" || is "LatestMajor" }
 
+    /// The Microsoft.NETCore.App of an app that dotnet runs with --roll-forward Major when rollForward,
+    /// which the host takes over DOTNET_ROLL_FORWARD and the runtimeconfig.json, or else with the
+    /// DOTNET_ROLL_FORWARD of the environment
+    let withRollForward (rollForward: bool) (rollForwardVariable: string) (netCoreApp: NetCoreApp) =
+        withRollForwardVariable (if rollForward then "Major" else rollForwardVariable) netCoreApp
+
     /// The arguments of dotnet that run a framework-dependent paket.dll, before the ones of paket: with
     /// --roll-forward Major when rollForward, as `dotnet tool run` runs a local tool whose manifest says
     /// "rollForward": true
@@ -236,6 +242,29 @@ module Logic =
         |> Option.orElseWith (fun () -> rated |> Seq.tryFind (fun (_, runs) -> Option.isNone runs))
         |> Option.orElseWith (fun () -> Seq.tryHead rated)
         |> Option.map fst
+
+    /// The dotnet to run a framework-dependent paket.dll: of dotnets, the one that pickDotnet picks for
+    /// the Microsoft.NETCore.App that its runtimeconfig.json asks for, with --roll-forward Major when
+    /// rollForward, which the host takes over DOTNET_ROLL_FORWARD, or else with rollForwardVariable, the
+    /// DOTNET_ROLL_FORWARD of the environment
+    let findDotnet (rollForwardVariable: string) (dotnets: string seq) (rollForward: bool) (paketDll: string) =
+        let netCoreApp =
+            try
+                System.IO.Path.ChangeExtension(paketDll, ".runtimeconfig.json")
+                |> System.IO.File.ReadAllText
+                |> netCoreAppOfRuntimeConfig
+                |> Option.map (withRollForward rollForward rollForwardVariable)
+            with _ -> None
+        let runsPaket (dotnet: string) =
+            match netCoreApp with
+            | None -> None
+            | Some netCoreApp ->
+                try
+                    runtimesOfDotnet dotnet
+                    |> Option.map (runsApp netCoreApp)
+                with _ -> None
+        dotnets
+        |> pickDotnet runsPaket
 
     /// Whether a dotnet has an SDK, which `dotnet nuget` needs: a folder of the sdk folder next to it
     /// with the dotnet.dll of an SDK. None when there is no shared folder next to it either, as next
@@ -588,28 +617,6 @@ module internal PaketHandler =
         |> Seq.filter File.Exists
         |> Seq.cache
 
-    /// The dotnet to run a framework-dependent paket.dll: of the dotnets of existingDotnets, the one
-    /// that pickDotnet picks for the Microsoft.NETCore.App that its runtimeconfig.json asks for, with
-    /// the DOTNET_ROLL_FORWARD of the environment
-    let findDotnet (dotnets: string seq) (paketDll: string) =
-        let netCoreApp =
-            try
-                Path.ChangeExtension(paketDll, ".runtimeconfig.json")
-                |> File.ReadAllText
-                |> Internals.Logic.netCoreAppOfRuntimeConfig
-                |> Option.map (Internals.Logic.withRollForwardVariable (Environment.GetEnvironmentVariable "DOTNET_ROLL_FORWARD"))
-            with _ -> None
-        let runsPaket (dotnet: string) =
-            match netCoreApp with
-            | None -> None
-            | Some netCoreApp ->
-                try
-                    Internals.Logic.runtimesOfDotnet dotnet
-                    |> Option.map (Internals.Logic.runsApp netCoreApp)
-                with _ -> None
-        dotnets
-        |> Internals.Logic.pickDotnet runsPaket
-
     /// The dotnet to run `dotnet nuget`: of the dotnets of existingDotnets, the one that pickDotnet picks
     /// with hasSdk
     let findSdkDotnet (dotnets: string seq) =
@@ -691,10 +698,11 @@ module internal PaketHandler =
     let quoteProgram (path: string) =
         if path.Contains " " then "\"" + path + "\"" else path
 
-    /// The dotnet of findDotnet and the arguments that run a framework-dependent paket.dll, with
-    /// --roll-forward Major when rollForward; fails when there is no dotnet
+    /// The dotnet that findDotnet picks among dotnets, the ones of existingDotnets, with rollForward and
+    /// the DOTNET_ROLL_FORWARD of the environment, and the arguments that run a framework-dependent
+    /// paket.dll, with --roll-forward Major when rollForward; fails when there is no dotnet
     let dotnetCommand (dotnets: string seq) (rollForward: bool) (paketDll: string) =
-        match findDotnet dotnets paketDll with
+        match Internals.Logic.findDotnet (Environment.GetEnvironmentVariable "DOTNET_ROLL_FORWARD") dotnets rollForward paketDll with
         | Some dotnet -> dotnet, Internals.Logic.dotnetArguments rollForward paketDll
         | None ->
             failwith $"No dotnet was found to run '%s{paketDll}'. Please set DOTNET_ROOT to the folder of dotnet in the environment of the IDE or app that runs F# Interactive, or add that folder to its PATH."

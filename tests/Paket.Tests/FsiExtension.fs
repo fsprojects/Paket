@@ -293,6 +293,19 @@ module FsiExtension =
         Assert.IsFalse(rollForwardWith "Minor" paketApp)
 
     [<Test>]
+    let ``--roll-forward Major comes before DOTNET_ROLL_FORWARD and the runtimeconfig.json`` () =
+        let rollForwardWith (rollForward: bool) (variable: string) app =
+            (ReferenceLoading.Internals.Logic.withRollForward rollForward variable app).RollsForwardToLaterMajor
+        let app = { paketApp with RollsForwardToLaterMajor = false }
+        Assert.IsTrue(rollForwardWith true null app)
+        Assert.IsTrue(rollForwardWith true "Minor" app)
+        // without it, the roll forward of the runtimeconfig.json, unless DOTNET_ROLL_FORWARD is set
+        Assert.IsTrue(rollForwardWith false null paketApp)
+        Assert.IsTrue(rollForwardWith false "" paketApp)
+        Assert.IsFalse(rollForwardWith false "Minor" paketApp)
+        Assert.IsTrue(rollForwardWith false "LatestMajor" app)
+
+    [<Test>]
     let ``the arguments of dotnet have --roll-forward Major before the paket.dll when it rolls forward`` () =
         let dotnetArguments = ReferenceLoading.Internals.Logic.dotnetArguments
         Assert.AreEqual("\"/tools/paket.dll\" ", dotnetArguments false "/tools/paket.dll")
@@ -358,6 +371,29 @@ module FsiExtension =
             Assert.AreEqual(None, runtimesOfDotnet (System.IO.Path.Combine(folder, "shared", "dotnet")))
         finally
             System.IO.Directory.Delete(folder, true)
+
+    [<Test>]
+    let ``with --roll-forward Major, the dotnet of a later major runtime is picked whatever DOTNET_ROLL_FORWARD says`` () =
+        let older = dotnetInstall [ "9.0.11", true ]
+        let later = dotnetInstall [ "11.0.0", true ]
+        let tool = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "paket-tool-" + string (System.Guid.NewGuid()))
+        System.IO.Directory.CreateDirectory tool |> ignore
+        try
+            let paketDll = System.IO.Path.Combine(tool, "paket.dll")
+            System.IO.File.WriteAllText(System.IO.Path.Combine(tool, "paket.runtimeconfig.json"), paketRuntimeConfig)
+            let olderDotnet = System.IO.Path.Combine(older, "dotnet")
+            let laterDotnet = System.IO.Path.Combine(later, "dotnet")
+            let findDotnet rollForward variable =
+                ReferenceLoading.Internals.Logic.findDotnet variable [ olderDotnet; laterDotnet ] rollForward paketDll
+            Assert.AreEqual(Some laterDotnet, findDotnet true "Minor")
+            Assert.AreEqual(Some laterDotnet, findDotnet true null)
+            // without it, DOTNET_ROLL_FORWARD comes before the roll forward of the runtimeconfig.json: no dotnet
+            // runs paket, and the first one says what runtime is missing
+            Assert.AreEqual(Some olderDotnet, findDotnet false "Minor")
+            Assert.AreEqual(Some laterDotnet, findDotnet false null)
+        finally
+            for folder in [ older; later; tool ] do
+                System.IO.Directory.Delete(folder, true)
 
     [<Test>]
     let ``a dotnet has an SDK when a folder of its sdk folder has the dotnet.dll of an SDK`` () =
