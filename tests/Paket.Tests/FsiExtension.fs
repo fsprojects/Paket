@@ -72,14 +72,49 @@ module FsiExtension =
         | Ok _ -> None
         | Error reason -> Some reason
 
-    /// The paket tool of a manifest
+    /// The paket tool of a manifest, with a version that NuGet doesn't change
     let manifestPaket version rollForward : ReferenceLoading.Internals.Logic.ManifestPaket =
-        { Version = version; RollForward = rollForward }
+        { Version = version; NormalizedVersion = version; RollForward = rollForward }
 
     [<Test>]
     let ``a tool manifest gives the version of paket`` () =
         let manifest = """{ "version": 1, "isRoot": true, "tools": { "paket": { "version": "12.0.0", "commands": [ "paket" ] } } }"""
         Assert.AreEqual((Some (manifestPaket "12.0.0" false), true), paketOf manifest)
+
+    [<Test>]
+    let ``a tool manifest gives the version of paket as NuGet normalizes it`` () =
+        // the version that `dotnet tool restore` records in the toolResolverCache and restores the tool under
+        let manifest = """{ "version": 1, "isRoot": true, "tools": { "paket": { "version": "12.0-alpha003", "commands": [ "paket" ] } } }"""
+        // and the version as written, for the messages
+        let paket: ReferenceLoading.Internals.Logic.ManifestPaket =
+            { Version = "12.0-alpha003"; NormalizedVersion = "12.0.0-alpha003"; RollForward = false }
+        Assert.AreEqual((Some paket, true), paketOf manifest)
+
+    let normalizedNuGetVersion = ReferenceLoading.Internals.Logic.normalizedNuGetVersion
+
+    [<Test>]
+    let ``a version is normalized as NuGet does`` () =
+        Assert.AreEqual(Some "12.0.0-alpha003", normalizedNuGetVersion "12.0-alpha003")
+        Assert.AreEqual(Some "12.0.0", normalizedNuGetVersion "12.0.0.0")
+        Assert.AreEqual(Some "12.0.1", normalizedNuGetVersion "012.0.1")
+        Assert.AreEqual(Some "12.0.0", normalizedNuGetVersion "12.0.0+sha")
+        Assert.AreEqual(Some "12.0.0", normalizedNuGetVersion "12")
+        Assert.AreEqual(Some "1.2.3.4", normalizedNuGetVersion "1.2.3.4")
+        // the labels keep their case, a label can start with 0 when it isn't a number, and the metadata can have
+        // leading zeros
+        Assert.AreEqual(Some "12.0.0-Beta.0a.0", normalizedNuGetVersion " 12.0.0-Beta.0a.0+sha.01 ")
+        Assert.AreEqual(Some "12.0.0-rc-1", normalizedNuGetVersion "12.0.0-rc-1+build-2")
+        // the white space around the version and its numbers, as String.Trim removes it
+        Assert.AreEqual(Some "1.0.0", normalizedNuGetVersion "1. 0")
+        Assert.AreEqual(Some "12.0.0-beta", normalizedNuGetVersion "12 .0\t.0 -beta")
+        Assert.AreEqual(Some "12.0.0", normalizedNuGetVersion "\u00a012.0.0\u3000")
+        Assert.AreEqual(Some "12.0.0-alpha003", normalizedNuGetVersion "12.0\u00a0-alpha003")
+        Assert.AreEqual(Some "12.0.0", normalizedNuGetVersion "12\u2028.\u00850.0")
+
+    [<Test>]
+    let ``a version that NuGet refuses has no normalized form`` () =
+        for version in [ ""; "abc"; "1.2.3.4.5"; "1..0"; "12.0.0-"; "12.0.0-a..b"; "12.0.0-01"; "12.0.0-a_b"; "12.0.0+"; "12.0.0+a_b"; "2147483648.0.0"; "1.-0"; "1 0"; "12.0.0- beta"; "12\u0000.0.0"; "12.0.0\u0000"; "12\u200b.0.0"; "12\ufeff.0.0"; "+1.0" ] do
+            Assert.AreEqual(None, normalizedNuGetVersion version, version)
 
     [<Test>]
     let ``a tool manifest gives the rollForward of paket`` () =
@@ -193,6 +228,14 @@ module FsiExtension =
             Assert.AreEqual(Some "its \"tools\" isn't an object", refusalOf manifest, manifest)
         // without "tools", as without tools
         Assert.AreEqual((None, true), paketOf """{ "version": 1, "isRoot": true }""")
+
+    [<Test>]
+    let ``a tool manifest that gives paket a version that NuGet refuses is refused`` () =
+        // the folder of the tool would be looked for under it: an absolute path or a .. would leave the NuGet packages
+        // folder, and .NET Framework refuses a " in a path; the version is the JSON one, then the one read
+        for json, version in [ "/tmp/x", "/tmp/x"; "../../x", "../../x"; "", ""; "12.0.0\\\"x", "12.0.0\"x" ] do
+            let manifest = """{ "version": 1, "isRoot": false, "tools": { "paket": { "version": "VERSION", "commands": [ "paket" ] } } }""".Replace("VERSION", json)
+            Assert.AreEqual(Some $"the version '%s{version}' of paket isn't a NuGet version", refusalOf manifest, manifest)
 
     /// The tool manifest that declares paket, with its paket tool and its folder, or why the lookup stopped at an
     /// invalid manifest

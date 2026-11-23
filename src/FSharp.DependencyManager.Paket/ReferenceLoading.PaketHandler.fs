@@ -41,9 +41,52 @@ module Logic =
         //|> Seq.concat
         //|> Seq.map fst
 
+    /// The version of a tool in a tool manifest as NuGet normalizes it when dotnet reads it: three numbers, or
+    /// four when the last isn't 0, without their leading zeros, without the white space around the version and
+    /// around each number, then the prerelease labels with their case, without the build metadata. None when
+    /// NuGet refuses it.
+    /// `dotnet tool restore` records the tool under that version in the toolResolverCache, and restores it
+    /// in the folder of that version in lower case.
+    let normalizedNuGetVersion (version: string) =
+        let isPart allowLeadingZeros (part: string) =
+            part <> ""
+            && part |> Seq.forall (fun c -> (c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c = '-')
+            // a number with leading zeros isn't a prerelease label
+            && (allowLeadingZeros || part.Length = 1 || part.[0] <> '0' || not (part |> Seq.forall (fun c -> c >= '0' && c <= '9')))
+        let version = version.Trim()
+        let release, metadata =
+            match version.IndexOf '+' with
+            | -1 -> version, None
+            | i -> version.Substring(0, i), Some(version.Substring(i + 1))
+        let numbers, labels =
+            match release.IndexOf '-' with
+            | -1 -> release, None
+            | i -> release.Substring(0, i), Some(release.Substring(i + 1))
+        let numbers =
+            numbers.Split('.')
+            |> Array.map (fun number ->
+                // NuGet parses each number as an Int32 after String.Trim, and refuses the NUL characters that
+                // Int32.TryParse ignores at the end: the digits are checked first
+                let number = number.Trim()
+                if number = "" || not (number |> Seq.forall (fun c -> c >= '0' && c <= '9')) then None else
+                match System.Int32.TryParse(number, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture) with
+                | true, number -> Some number
+                | false, _ -> None)
+        let arePartsOf allowLeadingZeros (parts: string option) =
+            parts |> Option.forall (fun parts -> parts.Split('.') |> Array.forall (isPart allowLeadingZeros))
+        if numbers.Length > 4 || Array.contains None numbers || not (arePartsOf false labels) || not (arePartsOf true metadata) then None else
+        let numbers = Array.choose id numbers
+        let number i = if i < numbers.Length then numbers.[i] else 0
+        let revision = if number 3 > 0 then $".%d{number 3}" else ""
+        let labels = labels |> Option.map (fun labels -> "-" + labels) |> Option.defaultValue ""
+        Some $"%d{number 0}.%d{number 1}.%d{number 2}%s{revision}%s{labels}"
+
     /// The paket tool that a tool manifest declares
     type ManifestPaket = {
+        /// As the manifest writes it, which the messages show
         Version: string
+        /// As NuGet normalizes it: the version of the toolResolverCache and of the folder of the tool
+        NormalizedVersion: string
         /// "rollForward": true, as `dotnet tool install --allow-roll-forward` writes it, for which
         /// `dotnet tool run` runs the tool with --roll-forward Major
         RollForward: bool
@@ -175,8 +218,8 @@ module Logic =
     /// with their case, the last of each when it is written twice. The paket tool is the first with the ID
     /// "paket", in any case, as dotnet compares the IDs. An Error tells why it refuses a manifest, as dotnet
     /// does: one that isn't JSON, with comments or trailing commas, that isn't a JSON object, without "isRoot"
-    /// true or false, with "tools" that isn't an object, or whose paket tool has no version. Unlike dotnet, it
-    /// doesn't check the rest: it reads a manifest that dotnet refuses for another tool.
+    /// true or false, with "tools" that isn't an object, or whose paket tool has no version or one that NuGet
+    /// refuses. Unlike dotnet, it doesn't check the rest: it reads a manifest that dotnet refuses for another tool.
     let paketOfToolManifest (content: string) =
         match parseJson content with
         | Some (JsonObject manifest) ->
@@ -188,8 +231,13 @@ module Logic =
                 let properties = match tool with JsonObject properties -> properties | _ -> []
                 match jsonProperty "version" properties with
                 | Some (JsonString version) ->
-                    let rollForward = jsonProperty "rollForward" properties = Some (JsonBool true)
-                    Ok (Some { Version = version; RollForward = rollForward }, isRoot)
+                    match normalizedNuGetVersion version with
+                    | Some normalizedVersion ->
+                        let rollForward = jsonProperty "rollForward" properties = Some (JsonBool true)
+                        Ok (Some { Version = version; NormalizedVersion = normalizedVersion; RollForward = rollForward }, isRoot)
+                    // the folder of the tool is looked for under the version: one with a / or a .. would leave the
+                    // NuGet packages folder
+                    | None -> Error $"the version '%s{version}' of paket isn't a NuGet version"
                 | _ -> Error "the paket tool has no \"version\""
             | Some (JsonBool _), _ -> Error "its \"tools\" isn't an object"
             | _ -> Error "it has no \"isRoot\" true or false"
@@ -975,7 +1023,7 @@ module internal PaketHandler =
             let localTool =
                 (match foundLocalTool with Ok localTool -> localTool | Error _ -> None)
                 |> Option.map (fun (manifest, paket, manifestFolder) ->
-                    let version = paket.Version
+                    let version = paket.NormalizedVersion
                     // where `dotnet tool restore` restores it when run in the folder of the manifest, or where it was
                     // restored with another dotnet home folder, only looked for when the cache doesn't have it
                     let versionFolders =
@@ -996,7 +1044,7 @@ module internal PaketHandler =
                             match versionFolders.Value with
                             | [] -> ""
                             | folders -> " in " + (folders |> List.map (fun folder -> $"'%s{folder}'") |> String.concat " or ")
-                        Error $"Paket %s{version}, the local tool of '%s{manifest}', is not restored%s{notRestoredIn}. Please run 'dotnet tool restore' in '%s{manifestFolder}'.")
+                        Error $"Paket %s{paket.Version}, the local tool of '%s{manifest}', is not restored%s{notRestoredIn}. Please run 'dotnet tool restore' in '%s{manifestFolder}'.")
 
             // the message that the local tool isn't restored, or that the lookup reached a manifest that dotnet
             // refuses, which the errors of a paket that runs in its place repeat: it may be another version, which
