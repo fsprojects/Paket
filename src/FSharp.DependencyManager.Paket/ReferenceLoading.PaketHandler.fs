@@ -49,27 +49,168 @@ module Logic =
         RollForward: bool
     }
 
-    /// What the content of a tool manifest says of paket: the tool it declares, if any, and
-    /// whether it is "isRoot", which dotnet doesn't look above
+    /// A JSON value, with the properties of an object in their order, those written twice included
+    type JsonValue =
+        | JsonObject of (string * JsonValue) list
+        | JsonArray of JsonValue list
+        | JsonString of string
+        | JsonNumber of string
+        | JsonBool of bool
+        | JsonNull
+
+    exception private InvalidJson
+
+    /// The JSON value of a text, or None when it isn't JSON, as System.Text.Json reads it by default, as dotnet
+    /// reads a tool manifest: without comments or trailing commas, which dotnet refuses. It reads objects and
+    /// arrays 64 deep at most, as System.Text.Json does, so that a text can't overflow the stack.
+    let parseJson (text: string) =
+        // where the reading is, in a cell as closures can't capture a mutable variable
+        let i = ref 0
+        let fail () = raise InvalidJson
+        let isAt (c: char) = i.Value < text.Length && text.[i.Value] = c
+        let isAtDigit () = i.Value < text.Length && text.[i.Value] >= '0' && text.[i.Value] <= '9'
+        let isAtText (s: string) = System.String.CompareOrdinal(text, i.Value, s, 0, s.Length) = 0
+        let advance (count: int) = i.Value <- i.Value + count
+        let skipSpace () =
+            while isAt ' ' || isAt '\t' || isAt '\n' || isAt '\r' do
+                advance 1
+        let expect (c: char) = if isAt c then advance 1 else fail ()
+        let parseString () =
+            expect '"'
+            let value = System.Text.StringBuilder()
+            while not (isAt '"') do
+                // a control character is only written with an escape
+                if i.Value >= text.Length || text.[i.Value] < ' ' then fail ()
+                if text.[i.Value] <> '\\' then
+                    value.Append text.[i.Value] |> ignore
+                    advance 1
+                else
+                let escaped = if i.Value + 1 < text.Length then text.[i.Value + 1] else fail ()
+                if escaped = 'u' then
+                    let hex = if i.Value + 6 <= text.Length then text.Substring(i.Value + 2, 4) else fail ()
+                    if not (hex |> Seq.forall System.Uri.IsHexDigit) then fail ()
+                    value.Append(char (System.Convert.ToInt32(hex, 16))) |> ignore
+                    advance 6
+                else
+                let unescaped =
+                    match escaped with
+                    | '"' | '\\' | '/' -> escaped
+                    | 'b' -> '\b'
+                    | 'f' -> '\f'
+                    | 'n' -> '\n'
+                    | 'r' -> '\r'
+                    | 't' -> '\t'
+                    | _ -> fail ()
+                value.Append unescaped |> ignore
+                advance 2
+            advance 1
+            value.ToString()
+        // the items of an object or an array, separated by commas, up to its end
+        let parseItems (closing: char) (parseItem: unit -> 'item) =
+            advance 1
+            let items = ResizeArray<'item>()
+            skipSpace ()
+            if isAt closing then advance 1
+            else
+                let mutable more = true
+                while more do
+                    items.Add(parseItem ())
+                    skipSpace ()
+                    if isAt ',' then
+                        advance 1
+                        skipSpace ()
+                    else
+                        expect closing
+                        more <- false
+            List.ofSeq items
+        // one or more digits
+        let digits () =
+            if not (isAtDigit ()) then fail ()
+            while isAtDigit () do
+                advance 1
+        let rec parseValue (depth: int) =
+            skipSpace ()
+            if i.Value >= text.Length then fail ()
+            match text.[i.Value] with
+            | '{' | '[' when depth > 64 -> fail ()
+            | '{' ->
+                parseItems '}' (fun () ->
+                    let name = parseString ()
+                    skipSpace ()
+                    expect ':'
+                    name, parseValue (depth + 1))
+                |> JsonObject
+            | '[' -> parseItems ']' (fun () -> parseValue (depth + 1)) |> JsonArray
+            | '"' -> JsonString(parseString ())
+            | _ when isAtText "true" -> advance 4; JsonBool true
+            | _ when isAtText "false" -> advance 5; JsonBool false
+            | _ when isAtText "null" -> advance 4; JsonNull
+            | _ ->
+                let start = i.Value
+                if isAt '-' then advance 1
+                // without a leading zero, as 01
+                if isAt '0' then advance 1 else digits ()
+                if isAt '.' then
+                    advance 1
+                    digits ()
+                if isAt 'e' || isAt 'E' then
+                    advance 1
+                    if isAt '+' || isAt '-' then advance 1
+                    digits ()
+                JsonNumber(text.Substring(start, i.Value - start))
+        try
+            let value = parseValue 1
+            skipSpace ()
+            if i.Value < text.Length then None else Some value
+        with InvalidJson -> None
+
+    /// The value of a property of a JSON object: the last one when it is written twice, as System.Text.Json
+    /// gives it
+    let private jsonProperty (name: string) (properties: (string * JsonValue) list) =
+        properties |> List.tryFindBack (fst >> (=) name) |> Option.map snd
+
+    /// What the content of a tool manifest says of paket: the tool it declares, if any, and whether it is
+    /// "isRoot", which dotnet doesn't look above. It reads the manifest as JSON, by its structure, as dotnet
+    /// does: only the tools of "tools" count, and "tools", "version", "rollForward" and "isRoot" are read
+    /// with their case, the last of each when it is written twice. The paket tool is the first with the ID
+    /// "paket", in any case, as dotnet compares the IDs. An Error tells why it refuses a manifest, as dotnet
+    /// does: one that isn't JSON, with comments or trailing commas, that isn't a JSON object, without "isRoot"
+    /// true or false, with "tools" that isn't an object, or whose paket tool has no version. Unlike dotnet, it
+    /// doesn't check the rest: it reads a manifest that dotnet refuses for another tool.
     let paketOfToolManifest (content: string) =
-        let options = System.Text.RegularExpressions.RegexOptions.IgnoreCase
-        let paket =
-            System.Text.RegularExpressions.Regex.Matches(content, "\"paket\"\\s*:\\s*\\{([^}]*)\\}", options)
-            |> Seq.cast<System.Text.RegularExpressions.Match>
-            // the first "paket" object that has a version, as a "paket" property of another tool, which dotnet
-            // ignores, has none
-            |> Seq.tryPick (fun paketTool ->
-                let tool = paketTool.Groups.[1].Value
-                let version = System.Text.RegularExpressions.Regex.Match(tool, "\"version\"\\s*:\\s*\"([^\"]+)\"", options)
-                if not version.Success then None else
-                Some {
-                    Version = version.Groups.[1].Value
-                    // with its case, as dotnet reads it, so that a "RollForward", which dotnet ignores, doesn't add
-                    // --roll-forward Major; the version and isRoot are matched without case, as in the zsh completion
-                    RollForward = System.Text.RegularExpressions.Regex.IsMatch(tool, "\"rollForward\"\\s*:\\s*true")
-                })
-        let isRoot = System.Text.RegularExpressions.Regex.IsMatch(content, "\"isRoot\"\\s*:\\s*true", options)
-        paket, isRoot
+        match parseJson content with
+        | Some (JsonObject manifest) ->
+            match jsonProperty "isRoot" manifest, jsonProperty "tools" manifest |> Option.defaultValue (JsonObject []) with
+            | Some (JsonBool isRoot), JsonObject tools ->
+                match tools |> List.tryFind (fun (id, _) -> id.ToLowerInvariant() = "paket") with
+                | None -> Ok (None, isRoot)
+                | Some (_, tool) ->
+                let properties = match tool with JsonObject properties -> properties | _ -> []
+                match jsonProperty "version" properties with
+                | Some (JsonString version) ->
+                    let rollForward = jsonProperty "rollForward" properties = Some (JsonBool true)
+                    Ok (Some { Version = version; RollForward = rollForward }, isRoot)
+                | _ -> Error "the paket tool has no \"version\""
+            | Some (JsonBool _), _ -> Error "its \"tools\" isn't an object"
+            | _ -> Error "it has no \"isRoot\" true or false"
+        | Some _ -> Error "it isn't a JSON object"
+        | None -> Error "it isn't JSON, which allows no comment or trailing comma"
+
+    /// The first of the tool manifests up from the script that declares paket, with the paket tool and the folder
+    /// that the manifest is for, of the manifests given in order with their folder, which are read one by one with
+    /// readManifest. As dotnet, it doesn't read the manifests above an "isRoot" one, nor above one that it refuses,
+    /// which gives the Error that tells why.
+    let localToolOfManifests (readManifest: string -> string) (manifests: (string * string) seq) =
+        manifests
+        |> Seq.map (fun (folder, manifest) -> folder, manifest, paketOfToolManifest (readManifest manifest))
+        |> Seq.tryFind (fun (_, _, paket) ->
+            match paket with
+            | Ok (paket, isRoot) -> Option.isSome paket || isRoot
+            | Error _ -> true)
+        |> function
+            | Some (folder, manifest, Ok (Some paket, _)) -> Ok (Some (manifest, paket, folder))
+            | Some (_, manifest, Error reason) -> Error $"The tool manifest '%s{manifest}' is invalid: %s{reason}."
+            | _ -> Ok None
 
     /// Where to look for dotnet, in order: the host that runs the script (DOTNET_HOST_PATH, the
     /// running process when it is dotnet, the root of the running runtime), then DOTNET_ROOT, the
@@ -436,12 +577,13 @@ module Logic =
           [| userProfile; ".paket"; executable |] ]
         |> List.choose (fun parts -> try Some(System.IO.Path.Combine parts) with _ -> None)
 
-    /// The error when #r "paket:" finds no Paket: the message that the local tool isn't restored, when the
-    /// manifest declares paket, or else that Paket wasn't found, with the locations looked in, if any. There
-    /// is none without a user profile, NUGET_PACKAGES or a dotnet that tells the NuGet packages folder.
-    let paketNotFound (notRestored: string option) (scriptDir: string) (locations: string list) =
-        match notRestored with
-        | Some notRestored -> notRestored
+    /// The error when #r "paket:" finds no Paket: the message of why the local tool doesn't run, that it isn't
+    /// restored when the manifest declares paket, or that the lookup reached a manifest that dotnet refuses, or
+    /// else that Paket wasn't found, with the locations looked in, if any. There is none without a user profile,
+    /// NUGET_PACKAGES or a dotnet that tells the NuGet packages folder.
+    let paketNotFound (localToolProblem: string option) (scriptDir: string) (locations: string list) =
+        match localToolProblem with
+        | Some localToolProblem -> localToolProblem
         | None ->
         let locations =
             match locations with
@@ -466,17 +608,29 @@ module Logic =
     /// the paket.exe or bootstrapper of Paket 11, and a warning says that it is skipped, unless it is the
     /// global tool of ~/.paket. When the local tool isn't restored, a global tool still runs, or else the
     /// most recent Paket .NET tool restored, with a warning that it may be another version; the latter runs
-    /// without the rollForward of the manifest, which is for the local tool. globalTool and restoredTool
-    /// are only looked for when needed, in that order.
+    /// without the rollForward of the manifest, which is for the local tool. invalidManifest is the message
+    /// that the lookup of the local tool reached a manifest that dotnet refuses, which may have declared paket:
+    /// the Paket that runs then is the one that would run without a manifest that declares paket, with a
+    /// warning that it may be another version. globalTool and restoredTool are only looked for when needed,
+    /// in that order.
     let choosePaket
             (warn: string -> unit)
+            (invalidManifest: string option)
             (localTool: (string * Result<string * bool, string>) option)
             (toolPathExe: string option)
             (isGlobalToolPath: string -> bool)
             (globalTool: unit -> string option)
             (restoredTool: unit -> string option) =
+        let insteadOfLocalTool (paket: string) =
+            match localTool with
+            | Some (_, Error notRestored) -> Some notRestored
+            | _ -> invalidManifest
+            |> Option.iter (fun localToolProblem -> warn $"%s{localToolProblem} Running %s{paket} instead, which may be another version.")
+
         match localTool, toolPathExe with
-        | None, Some paketExe -> Some (PaketExe paketExe)
+        | None, Some paketExe ->
+            insteadOfLocalTool paketExe
+            Some (PaketExe paketExe)
         | _ ->
 
         match localTool, toolPathExe with
@@ -491,10 +645,6 @@ module Logic =
         | Some (_, Ok (paketDll, rollForward)) -> Some (PaketDll(paketDll, rollForward))
         | _ ->
 
-        let insteadOfLocalTool (paket: string) =
-            match localTool with
-            | Some (_, Error notRestored) -> warn $"%s{notRestored} Running %s{paket} instead, which may be another version."
-            | _ -> ()
         match globalTool () with
         | Some paketExe ->
             insteadOfLocalTool "a global tool"
@@ -585,16 +735,15 @@ module internal PaketHandler =
 
     /// The first tool manifest up from the directory that has paket, with the paket tool it declares and
     /// the folder that the manifest is for: the one of dotnet-tools.json or of its .config folder,
-    /// where `dotnet tool restore` is run. As dotnet, it doesn't look above an "isRoot" manifest.
+    /// where `dotnet tool restore` is run. As dotnet, it doesn't look above an "isRoot" manifest, nor
+    /// above one that it refuses, which gives the Error that tells why.
     let findLocalTool (baseDir: DirectoryInfo) =
         getDirectoryAndAllParentDirectories baseDir
         |> Seq.collect (fun dir ->
             [ dir.FullName, Path.Combine(dir.FullName, ".config", "dotnet-tools.json")
               dir.FullName, Path.Combine(dir.FullName, "dotnet-tools.json") ])
         |> Seq.filter (snd >> File.Exists)
-        |> Seq.map (fun (folder, manifest) -> folder, manifest, Internals.Logic.paketOfToolManifest (File.ReadAllText manifest))
-        |> Seq.tryFind (fun (_, _, (paket, isRoot)) -> Option.isSome paket || isRoot)
-        |> Option.bind (fun (folder, manifest, (paket, _)) -> paket |> Option.map (fun paket -> manifest, paket, folder))
+        |> Internals.Logic.localToolOfManifests File.ReadAllText
 
     /// The dotnetCandidates that exist, each one checked for existence once, when an enumeration
     /// first reaches it
@@ -818,10 +967,13 @@ module internal PaketHandler =
             // the folder of the script, which findLocalTool walks up from: when the manifest is for that folder,
             // findLocalTool gives the FullName that paketFolders below asks nugetPackages for, which runs once for both
             let scriptFolder = DirectoryInfo scriptDir
+            // the manifest that declares paket, or the message that the lookup reached a manifest that dotnet refuses
+            let foundLocalTool = findLocalTool scriptFolder
+            let invalidManifest = match foundLocalTool with Error invalidManifest -> Some invalidManifest | Ok _ -> None
             // the manifest that declares paket, with the paket.dll of its local tool and the rollForward of the
             // manifest, or else the message that it isn't restored
             let localTool =
-                findLocalTool scriptFolder
+                (match foundLocalTool with Ok localTool -> localTool | Error _ -> None)
                 |> Option.map (fun (manifest, paket, manifestFolder) ->
                     let version = paket.Version
                     // where `dotnet tool restore` restores it when run in the folder of the manifest, or where it was
@@ -846,12 +998,13 @@ module internal PaketHandler =
                             | folders -> " in " + (folders |> List.map (fun folder -> $"'%s{folder}'") |> String.concat " or ")
                         Error $"Paket %s{version}, the local tool of '%s{manifest}', is not restored%s{notRestoredIn}. Please run 'dotnet tool restore' in '%s{manifestFolder}'.")
 
-            // the message that the local tool isn't restored, which the errors of a paket that runs in its place
-            // repeat: it may be another version, which only a warning told
-            let notRestoredLocalTool = match localTool with Some (_, Error notRestored) -> Some notRestored | _ -> None
+            // the message that the local tool isn't restored, or that the lookup reached a manifest that dotnet
+            // refuses, which the errors of a paket that runs in its place repeat: it may be another version, which
+            // only a warning told
+            let localToolProblem = match localTool with Some (_, Error notRestored) -> Some notRestored | _ -> invalidManifest
             let withLocalToolHint (message: string) =
-                match notRestoredLocalTool with
-                | Some notRestored -> message + Environment.NewLine + notRestored
+                match localToolProblem with
+                | Some localToolProblem -> message + Environment.NewLine + localToolProblem
                 | None -> message
 
             // we try to resolve paket installed with --tool-path any place up in the folder structure from current script
@@ -875,14 +1028,14 @@ module internal PaketHandler =
 
             let toolPath, toolArguments =
                 // the warnings come before dotnetCommand, which can fail
-                match Internals.Logic.choosePaket warn localTool toolPathExe isGlobalToolPath (fun () -> globalTools |> List.tryFind File.Exists) restoredTool with
+                match Internals.Logic.choosePaket warn invalidManifest localTool toolPathExe isGlobalToolPath (fun () -> globalTools |> List.tryFind File.Exists) restoredTool with
                 | Some (Internals.Logic.PaketExe paketExe) -> paketExe, ""
                 | Some (Internals.Logic.PaketDll(paketDll, rollForward)) ->
                     try dotnetCommand dotnets.Value rollForward paketDll
-                    with e when Option.isSome notRestoredLocalTool -> failwith (withLocalToolHint e.Message)
+                    with e when Option.isSome localToolProblem -> failwith (withLocalToolHint e.Message)
                 | None ->
                     // restoredTool ran, which looked for paketFolders
-                    failwith (Internals.Logic.paketNotFound notRestoredLocalTool scriptDir [ yield! globalTools; yield! paketFolders.Value ])
+                    failwith (Internals.Logic.paketNotFound localToolProblem scriptDir [ yield! globalTools; yield! paketFolders.Value ])
 
             writeLine ConsoleColor.Green (sprintf "using %s" ((quoteProgram toolPath + " " + toolArguments).TrimEnd()))
         
@@ -911,7 +1064,7 @@ module internal PaketHandler =
             // as a global tool that isn't executable
             try p.Start() |> ignore
             // its message only, as with dotnetCommand: an inner exception would come after the restore message
-            with e when Option.isSome notRestoredLocalTool -> failwith (withLocalToolHint e.Message)
+            with e when Option.isSome localToolProblem -> failwith (withLocalToolHint e.Message)
             p.BeginErrorReadLine()
             p.BeginOutputReadLine()
             p.WaitForExit()
@@ -925,10 +1078,11 @@ module internal PaketHandler =
             else
                 // the result of a paket that ran in place of the local tool, maybe another version, isn't kept: with
                 // a comment, paket.dependencies no longer equals the lines of the script, and the next resolution runs
-                // paket again, the local tool once it is restored, which installs the versions of the paket.lock left
+                // paket again, the local tool once it is restored or its manifest valid, which installs the versions of
+                // the paket.lock left
                 // here, as paket install does. It isn't deleted, as another resolution of the script may have started
                 // a paket that waits for the lock of this folder to read it.
-                if Option.isSome notRestoredLocalTool then
+                if Option.isSome localToolProblem then
                     try File.AppendAllLines(workingDirSpecFile.FullName, [ "// installed by a paket that ran in place of the local tool" ]) with _ -> ()
                 (loadScript,additionalIncludeFolders())
 

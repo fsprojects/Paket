@@ -60,7 +60,17 @@ module FsiExtension =
             |> Seq.toArray
         Assert.AreEqual([| "12.0.0"; "12.0.0-rc1"; "12.0.0-alpha001"; "11.0.0" |], actual)
 
-    let paketOf manifest = ReferenceLoading.Internals.Logic.paketOfToolManifest manifest
+    /// What a tool manifest says of paket, which fails when the manifest is refused
+    let paketOf manifest =
+        match ReferenceLoading.Internals.Logic.paketOfToolManifest manifest with
+        | Ok paket -> paket
+        | Error reason -> failwith reason
+
+    /// Why a tool manifest is refused, if it is
+    let refusalOf manifest =
+        match ReferenceLoading.Internals.Logic.paketOfToolManifest manifest with
+        | Ok _ -> None
+        | Error reason -> Some reason
 
     /// The paket tool of a manifest
     let manifestPaket version rollForward : ReferenceLoading.Internals.Logic.ManifestPaket =
@@ -94,17 +104,17 @@ module FsiExtension =
 
     [<Test>]
     let ``the rollForward of another tool isn't the one of paket`` () =
-        let manifest = """{ "version": 1, "tools": { "paket": { "version": "12.0.0", "commands": [ "paket" ] }, "fantomas": { "version": "7.0.0", "commands": [ "fantomas" ], "rollForward": true } } }"""
+        let manifest = """{ "version": 1, "isRoot": false, "tools": { "paket": { "version": "12.0.0", "commands": [ "paket" ] }, "fantomas": { "version": "7.0.0", "commands": [ "fantomas" ], "rollForward": true } } }"""
         Assert.AreEqual((Some (manifestPaket "12.0.0" false), false), paketOf manifest)
 
     [<Test>]
     let ``a paket property of another tool isn't the paket tool`` () =
-        let manifest = """{ "version": 1, "tools": { "fantomas": { "version": "7.0.0", "commands": [ "fantomas" ], "paket": { "enabled": true } }, "paket": { "version": "12.0.0", "commands": [ "paket" ], "rollForward": true } } }"""
+        let manifest = """{ "version": 1, "isRoot": false, "tools": { "fantomas": { "version": "7.0.0", "commands": [ "fantomas" ], "paket": { "enabled": true } }, "paket": { "version": "12.0.0", "commands": [ "paket" ], "rollForward": true } } }"""
         Assert.AreEqual((Some (manifestPaket "12.0.0" true), false), paketOf manifest)
 
     [<Test>]
     let ``a command named paket of another tool isn't paket`` () =
-        let manifest = """{ "version": 1, "tools": { "paket-wrapper": { "version": "1.0.0", "commands": [ "paket" ] } } }"""
+        let manifest = """{ "version": 1, "isRoot": false, "tools": { "paket-wrapper": { "version": "1.0.0", "commands": [ "paket" ] } } }"""
         Assert.AreEqual((None, false), paketOf manifest)
 
     [<Test>]
@@ -116,6 +126,154 @@ module FsiExtension =
     let ``a tool manifest that isn't the root lets the lookup go up`` () =
         let manifest = """{ "version": 1, "isRoot": false, "tools": {} }"""
         Assert.AreEqual((None, false), paketOf manifest)
+
+    [<Test>]
+    let ``only the tools of "tools" count`` () =
+        // a "paket" object with a version in another tool, or out of "tools"
+        let manifest = """{ "version": 1, "isRoot": false, "paket": { "version": "8.0.0" }, "tools": { "fantomas": { "version": "7.0.0", "commands": [ "fantomas" ], "paket": { "version": "9.0.0" } }, "paket": { "version": "12.0.0", "commands": [ "paket" ] } } }"""
+        Assert.AreEqual((Some (manifestPaket "12.0.0" false), false), paketOf manifest)
+        // an object in the paket tool doesn't hide the properties after it
+        let manifest = """{ "version": 1, "isRoot": false, "tools": { "paket": { "version": "12.0.0", "commands": [ "paket" ], "settings": { "a": [ {} ] }, "rollForward": true } } }"""
+        Assert.AreEqual((Some (manifestPaket "12.0.0" true), false), paketOf manifest)
+
+    [<Test>]
+    let ``the property names are case-sensitive, the tool ID isn't`` () =
+        // as dotnet, which refuses a manifest without "isRoot" or a paket tool without "version"
+        Assert.AreEqual(Some "it has no \"isRoot\" true or false", refusalOf """{ "version": 1, "IsRoot": true, "tools": {} }""")
+        Assert.AreEqual(
+            Some "the paket tool has no \"version\"",
+            refusalOf """{ "version": 1, "isRoot": true, "tools": { "paket": { "Version": "12.0.0", "commands": [ "paket" ] } } }""")
+        Assert.AreEqual((None, false), paketOf """{ "version": 1, "isRoot": false, "Tools": { "paket": { "version": "12.0.0", "commands": [ "paket" ] } } }""")
+        Assert.AreEqual(
+            (Some (manifestPaket "12.0.0" false), false),
+            paketOf """{ "version": 1, "isRoot": false, "tools": { "Paket": { "version": "12.0.0", "commands": [ "paket" ] } } }""")
+        // of two IDs that differ only by case, the first counts; the first, "pa\u006bet", is paket written with an escape
+        Assert.AreEqual(
+            (Some (manifestPaket "12.0.0" false), false),
+            paketOf """{ "version": 1, "isRoot": false, "tools": { "pa\u006bet": { "version": "12.0.0", "commands": [ "paket" ] }, "Paket": { "version": "12.1.0", "commands": [ "paket" ] } } }""")
+
+    [<Test>]
+    let ``the last of a property written twice counts`` () =
+        let manifest = """{ "isRoot": true, "version": 1, "isRoot": false, "tools": { "paket": { "version": "12.0.0", "rollForward": true, "commands": [ "paket" ], "version": "12.1.0", "rollForward": false } } }"""
+        Assert.AreEqual((Some (manifestPaket "12.1.0" false), false), paketOf manifest)
+
+    [<Test>]
+    let ``a tool manifest with comments or trailing commas is refused`` () =
+        // as dotnet, which reads it as strict JSON
+        for manifest in
+            [ "{ // the tools of the repository\n  \"version\": 1, \"isRoot\": true, \"tools\": {} }"
+              """{ /* the tools of the repository */ "version": 1, "isRoot": true, "tools": {} }"""
+              """{ "version": 1, "isRoot": true, "tools": {}, }"""
+              """{ "version": 1, "isRoot": true, "tools": { "paket": { "version": "12.0.0", "commands": [ "paket", ] } } }""" ] do
+            Assert.AreEqual(Some "it isn't JSON, which allows no comment or trailing comma", refusalOf manifest, manifest)
+
+    [<Test>]
+    let ``a tool manifest that isn't a JSON object is refused`` () =
+        // not JSON, as a manifest cut in a string or after a backslash, or an object followed by more text, such as
+        // an extra }
+        for manifest in [ ""; "{"; """{ "tools": { "paket": { "version": "12.0"""; """{ "tools": { "paket": { "version": "12.0\"""; """{ "tools": { "paket": { "version": "12.0.0" } } } }""" ] do
+            Assert.AreEqual(Some "it isn't JSON, which allows no comment or trailing comma", refusalOf manifest, manifest)
+        // JSON that isn't an object
+        for manifest in [ "[]"; "\"paket\"" ] do
+            Assert.AreEqual(Some "it isn't a JSON object", refusalOf manifest, manifest)
+
+    [<Test>]
+    let ``a tool manifest without "isRoot" true or false, or with a paket tool without a version, is refused`` () =
+        // as dotnet, which doesn't know then whether to look above it
+        for manifest in [ """{ "version": 1, "tools": {} }"""; """{ "version": 1, "isRoot": "true", "tools": {} }"""; """{ "version": 1, "isRoot": null, "tools": {} }""" ] do
+            Assert.AreEqual(Some "it has no \"isRoot\" true or false", refusalOf manifest, manifest)
+        // the first paket tool counts, even when another one, with an ID in another case, has a version
+        for manifest in [ """{ "version": 1, "isRoot": false, "tools": { "paket": { "commands": [ "paket" ] }, "Paket": { "version": "12.0.0", "commands": [ "paket" ] } } }"""; """{ "version": 1, "isRoot": false, "tools": { "paket": { "version": 12, "commands": [ "paket" ] } } }"""; """{ "version": 1, "isRoot": false, "tools": { "paket": "12.0.0" } }""" ] do
+            Assert.AreEqual(Some "the paket tool has no \"version\"", refusalOf manifest, manifest)
+
+    [<Test>]
+    let ``a tool manifest with "tools" that isn't an object is refused`` () =
+        // as dotnet, where it would look above it for paket
+        for manifest in [ """{ "version": 1, "isRoot": false, "tools": [] }"""; """{ "version": 1, "isRoot": false, "tools": null }""" ] do
+            Assert.AreEqual(Some "its \"tools\" isn't an object", refusalOf manifest, manifest)
+        // without "tools", as without tools
+        Assert.AreEqual((None, true), paketOf """{ "version": 1, "isRoot": true }""")
+
+    /// The tool manifest that declares paket, with its paket tool and its folder, or why the lookup stopped at an
+    /// invalid manifest
+    type FoundLocalTool = Result<(string * ReferenceLoading.Internals.Logic.ManifestPaket * string) option, string>
+
+    /// What localToolOfManifests finds in manifests given with their folder and their content, in order, and the
+    /// manifests that it reads
+    let localToolOf (manifests: (string * string * string) list) : FoundLocalTool * string list =
+        let read = ResizeArray()
+        let contents = manifests |> List.map (fun (_, manifest, content) -> manifest, content) |> Map.ofList
+        let localTool =
+            ReferenceLoading.Internals.Logic.localToolOfManifests
+                (fun manifest -> read.Add manifest; Map.find manifest contents)
+                (manifests |> List.map (fun (folder, manifest, _) -> folder, manifest))
+        localTool, List.ofSeq read
+
+    let paketManifest = """{ "version": 1, "isRoot": false, "tools": { "paket": { "version": "12.0.0", "commands": [ "paket" ] } } }"""
+    let rootManifest = """{ "version": 1, "isRoot": true, "tools": {} }"""
+    let notRootManifest = """{ "version": 1, "isRoot": false, "tools": {} }"""
+
+    [<Test>]
+    let ``the local tool is the one of the first manifest up from the script that declares paket`` () =
+        let found: FoundLocalTool = Ok (Some ("/repo/.config/dotnet-tools.json", manifestPaket "12.0.0" false, "/repo"))
+        // the manifests above it aren't read
+        Assert.AreEqual(
+            (found, [ "/repo/src/dotnet-tools.json"; "/repo/.config/dotnet-tools.json" ]),
+            localToolOf
+                [ "/repo/src", "/repo/src/dotnet-tools.json", notRootManifest
+                  "/repo", "/repo/.config/dotnet-tools.json", paketManifest
+                  "/", "/dotnet-tools.json", paketManifest ])
+        let notFound: FoundLocalTool = Ok None
+        Assert.AreEqual((notFound, [ "/repo/dotnet-tools.json" ]), localToolOf [ "/repo", "/repo/dotnet-tools.json", notRootManifest ])
+        Assert.AreEqual((notFound, List.empty<string>), localToolOf [])
+
+    [<Test>]
+    let ``the lookup of the local tool stops at a root manifest, and at an invalid one with the reason`` () =
+        let notFound: FoundLocalTool = Ok None
+        Assert.AreEqual(
+            (notFound, [ "/repo/dotnet-tools.json" ]),
+            localToolOf [ "/repo", "/repo/dotnet-tools.json", rootManifest; "/", "/dotnet-tools.json", paketManifest ])
+        // as dotnet, which fails on it
+        let invalid: FoundLocalTool = Error "The tool manifest '/repo/dotnet-tools.json' is invalid: it has no \"isRoot\" true or false."
+        Assert.AreEqual(
+            (invalid, [ "/repo/dotnet-tools.json" ]),
+            localToolOf [ "/repo", "/repo/dotnet-tools.json", """{ "version": 1, "tools": {} }"""; "/", "/dotnet-tools.json", paketManifest ])
+
+    let parseJson = ReferenceLoading.Internals.Logic.parseJson
+
+    [<Test>]
+    let ``JSON is read with its values and escapes`` () =
+        let expected =
+            ReferenceLoading.Internals.Logic.JsonObject
+                [ "a", ReferenceLoading.Internals.Logic.JsonArray [ ReferenceLoading.Internals.Logic.JsonNumber "-0.5e+10"; ReferenceLoading.Internals.Logic.JsonBool true; ReferenceLoading.Internals.Logic.JsonBool false; ReferenceLoading.Internals.Logic.JsonNull ]
+                  "a", ReferenceLoading.Internals.Logic.JsonString "\u00e9\"\\/\b\f\n\r\t" ]
+        Assert.AreEqual(Some expected, parseJson " \r\n\t{ \"a\" : [ -0.5e+10, true, false, null ], \"a\": \"\\u00e9\\\"\\\\\\/\\b\\f\\n\\r\\t\" } ")
+        // an escape that isn't JSON
+        Assert.AreEqual(None, parseJson "\"\\x\"")
+        Assert.AreEqual(None, parseJson "\"\\u12\"")
+        Assert.AreEqual(None, parseJson "\"\\u12zz\"")
+
+    [<Test>]
+    let ``JSON is read as System.Text.Json reads it by default`` () =
+        // the numbers of JSON, and a control character with an escape
+        for json, value in [ "-0", "-0"; "10.5e-3", "10.5e-3"; "1E+2", "1E+2" ] do
+            Assert.AreEqual(Some (ReferenceLoading.Internals.Logic.JsonNumber value), parseJson json, json)
+        Assert.AreEqual(Some (ReferenceLoading.Internals.Logic.JsonString "\u0001"), parseJson "\"\\u0001\"")
+        // other numbers, a control character in a string, comments, trailing commas, and white space that JSON doesn't
+        // have
+        for json in [ "01"; "-01"; "1."; ".5"; "+1"; "-"; "1e"; "1e+"; "\"\u0001\""; "\"a\tb\""; "// a\n1"; "/* a */ 1"; "1 // a"; "[ 1, ]"; "{ \"a\": 1, }"; "[ , ]"; "\u00a01"; "\f1" ] do
+            Assert.AreEqual(None, parseJson json, json)
+
+    [<Test>]
+    let ``JSON is read 64 objects and arrays deep at most`` () =
+        let nested depth = String.replicate depth "[" + String.replicate depth "]"
+        Assert.IsTrue(Option.isSome (parseJson (nested 64)))
+        Assert.AreEqual(None, parseJson (nested 65))
+        Assert.AreEqual(None, parseJson (nested 100000))
+        let nestedObjects depth = String.replicate depth "{\"a\":" + "1" + String.replicate depth "}"
+        Assert.IsTrue(Option.isSome (parseJson (nestedObjects 64)))
+        Assert.AreEqual(None, parseJson (nestedObjects 65))
+        Assert.AreEqual(None, parseJson (nestedObjects 100000))
 
 
     let root = System.IO.Path.GetFullPath(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "dotnet-lookup"))
@@ -644,20 +802,24 @@ module FsiExtension =
         Assert.AreEqual(1, List.length (paketFolders true (Some upperCase) (inRoot [ "home" ])))
         Assert.AreEqual(2, List.length (paketFolders false (Some upperCase) (inRoot [ "home" ])))
 
-    /// The Paket that choosePaket picks, the warnings it gives and the lookups it makes, with
-    /// ~/.paket/paket as the global tool of ~/.paket
-    let choosePaket localTool toolPathExe globalTool restoredTool =
+    /// The Paket that choosePaket picks after the lookup of the local tool reached an invalid manifest, the
+    /// warnings it gives and the lookups it makes, with ~/.paket/paket as the global tool of ~/.paket
+    let choosePaketAfter invalidManifest localTool toolPathExe globalTool restoredTool =
         let warnings = ResizeArray()
         let lookups = ResizeArray()
         let paket =
             ReferenceLoading.Internals.Logic.choosePaket
                 warnings.Add
+                invalidManifest
                 localTool
                 toolPathExe
                 (fun paketExe -> paketExe = "~/.paket/paket")
                 (fun () -> lookups.Add "global tool"; globalTool)
                 (fun () -> lookups.Add "restored tool"; restoredTool)
         paket, List.ofSeq warnings, List.ofSeq lookups
+
+    /// The Paket that choosePaket picks, the warnings it gives and the lookups it makes
+    let choosePaket localTool toolPathExe globalTool restoredTool = choosePaketAfter None localTool toolPathExe globalTool restoredTool
 
     let manifest = "/repo/.config/dotnet-tools.json"
     let notRestored = "Paket 12.0.0, the local tool of '/repo/.config/dotnet-tools.json', is not restored. Please run 'dotnet tool restore' in '/repo'."
@@ -705,6 +867,25 @@ module FsiExtension =
              [ "global tool"; "restored tool" ]),
             choosePaket localTool None None (Some "/restored/paket.dll"))
         Assert.AreEqual((None, [ skipped ], [ "global tool"; "restored tool" ]), choosePaket localTool (Some "/repo/.paket/paket") None None)
+
+    [<Test>]
+    let ``after an invalid manifest, the Paket that runs without a manifest that declares paket runs, with a warning`` () =
+        let invalidManifest = "The tool manifest '/repo/.config/dotnet-tools.json' is invalid: it has no \"isRoot\" true or false."
+        let instead paket = $"%s{invalidManifest} Running %s{paket} instead, which may be another version."
+        let choosePaket = choosePaketAfter (Some invalidManifest) None
+        // a paket installed with --tool-path isn't skipped, as the manifest may not declare paket
+        Assert.AreEqual(
+            (Some (ReferenceLoading.Internals.Logic.PaketExe "/repo/.paket/paket"), [ instead "/repo/.paket/paket" ], List.empty<string>),
+            choosePaket (Some "/repo/.paket/paket") (Some "~/.dotnet/tools/paket") (Some "/restored/paket.dll"))
+        Assert.AreEqual(
+            (Some (ReferenceLoading.Internals.Logic.PaketExe "~/.dotnet/tools/paket"), [ instead "a global tool" ], [ "global tool" ]),
+            choosePaket None (Some "~/.dotnet/tools/paket") (Some "/restored/paket.dll"))
+        Assert.AreEqual(
+            (Some (ReferenceLoading.Internals.Logic.PaketDll("/restored/paket.dll", false)),
+             [ instead "the most recent Paket .NET tool restored" ],
+             [ "global tool"; "restored tool" ]),
+            choosePaket None None (Some "/restored/paket.dll"))
+        Assert.AreEqual((None, List.empty<string>, [ "global tool"; "restored tool" ]), choosePaket None None None)
 
     [<Test>]
     let ``the local tool runs with the rollForward of its manifest`` () =

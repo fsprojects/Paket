@@ -18,6 +18,15 @@ The extension runs the Paket .NET tool. It looks for, in order:
 * a global tool, in `~/.dotnet/tools` or `~/.paket`,
 * the most recent Paket .NET tool restored in the NuGet packages folder.
 
+As dotnet, it doesn't look for a local tool in or above a tool manifest that isn't
+JSON, which allows no comment or trailing comma, that isn't a JSON object, that has
+no `isRoot` set to `true` or `false`, whose `tools` isn't an object, or whose Paket
+tool has no version. It warns and runs the Paket that it
+runs without a manifest that declares Paket, which may be another version, and fails
+with the reason only when it finds none. As when the local tool isn't restored, the
+error of that Paket repeats the reason, and its result isn't kept. It doesn't check
+the rest: it still reads a manifest that dotnet refuses for another tool.
+
 When the local tool isn't restored, a Paket installed with `--tool-path` is still
 skipped: `#r "paket:"` warns and runs a global tool instead, or else the most recent
 Paket .NET tool restored, either of which may be a version other than the one in the
