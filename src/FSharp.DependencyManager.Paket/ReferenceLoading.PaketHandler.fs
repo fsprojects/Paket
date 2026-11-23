@@ -470,22 +470,20 @@ module Logic =
     /// The paket.dll files that `dotnet tool restore` recorded for a version of paket, in the content
     /// of the .dotnet/toolResolverCache/1/paket file of the dotnet home folder, which `dotnet tool run`
     /// reads: the PathToExecutable of the paket command of that version that dotnet runs, for any
-    /// target framework. It reads the JSON that the SDK writes, an array of objects without nested ones.
+    /// target framework. It reads the JSON that the SDK writes, an array of objects.
     let paketDllsOfToolResolverCache (version: string) (content: string) =
-        let jsonString = "\"((?:[^\"\\\\]|\\\\.)*)\""
-        let value (name: string) (row: string) =
-            let m = System.Text.RegularExpressions.Regex.Match(row, "\"" + name + "\"\\s*:\\s*" + jsonString)
-            if m.Success then Some(System.Text.RegularExpressions.Regex.Unescape m.Groups.[1].Value) else None
-        System.Text.RegularExpressions.Regex.Matches(content, "\\{(?:[^{}\"]|" + jsonString + ")*\\}")
-        |> Seq.cast<System.Text.RegularExpressions.Match>
-        |> Seq.map (fun row -> row.Value)
-        |> Seq.filter (fun row ->
-            value "Name" row = Some "paket"
-            // and not an executable, as a tool package for a runtime can have
-            && value "Runner" row = Some "dotnet"
-            && value "Version" row |> Option.exists (fun recorded -> System.String.Equals(recorded, version, System.StringComparison.OrdinalIgnoreCase)))
-        |> Seq.choose (value "PathToExecutable")
-        |> List.ofSeq
+        let rows = match parseJson content with Some (JsonArray rows) -> rows | _ -> []
+        rows
+        |> List.choose (function
+            | JsonObject row ->
+                let value (name: string) = match jsonProperty name row with Some (JsonString value) -> Some value | _ -> None
+                if value "Name" = Some "paket"
+                   // and not an executable, as a tool package for a runtime can have
+                   && value "Runner" = Some "dotnet"
+                   && value "Version" |> Option.exists (fun recorded -> System.String.Equals(recorded, version, System.StringComparison.OrdinalIgnoreCase))
+                then value "PathToExecutable"
+                else None
+            | _ -> None)
 
     /// The folders of the Paket .NET tool in a NuGet packages folder and in the one of the user
     /// profile, ~/.nuget/packages, in that order and once each, without case on Windows. A folder

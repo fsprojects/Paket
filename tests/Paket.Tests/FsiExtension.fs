@@ -825,6 +825,12 @@ module FsiExtension =
         Assert.AreEqual(List.empty<string>, ReferenceLoading.Internals.Logic.paketDllsOfToolResolverCache "1.0.0" cache)
 
     [<Test>]
+    let ``the toolResolverCache is read as JSON`` () =
+        // a row with an object, and a property after it
+        let cache = """[ { "Version": "1.0.0", "Name": "paket", "Extra": { "Name": "other", "Runner": "executable" }, "Runner": "dotnet", "PathToExecutable": "/tool/paket.dll" } ]"""
+        Assert.AreEqual([ "/tool/paket.dll" ], ReferenceLoading.Internals.Logic.paketDllsOfToolResolverCache "1.0.0" cache)
+
+    [<Test>]
     let ``the Paket .NET tool is looked for in the NuGet packages folder, then in the one of the user profile, once each`` () =
         let paketFolders = ReferenceLoading.Internals.Logic.paketFolders
         let home = inRoot [ "home" ]
