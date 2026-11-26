@@ -148,7 +148,8 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLi
         use f = File.Open(configFilePath, FileMode.Create)
         config.Save(f, SaveOptions.DisableFormatting)
 
-    projectFile.SetOrCreateAutoGenerateBindingRedirects()
+    if not (Seq.isEmpty bindingRedirects) then
+        projectFile.AddAutoGenerateBindingRedirects()
 
 let findAllReferencesFiles root =
     let findRefFile (p:ProjectFile) =
