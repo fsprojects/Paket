@@ -1728,21 +1728,19 @@ module ProjectFile =
               Kind = NugetPackageKind.DotnetCliTool
               TargetFramework = None })
 
-    let setOrCreateAutoGenerateBindingRedirects (project:ProjectFile) =
+    /// Turns on AutoGenerateBindingRedirects, unless the project sets it already, to either value.
+    let addAutoGenerateBindingRedirects (project:ProjectFile) =
         let nodes = project.Document |> getDescendants "PropertyGroup"
-        let mutable found = false
-        for node in nodes do
-            for autoNode in node |> getDescendants "AutoGenerateBindingRedirects" do
-                found <- true
-                autoNode.InnerText <- "true"
+        let isSet =
+            nodes
+            |> List.exists (fun node -> node |> getDescendants "AutoGenerateBindingRedirects" |> List.isEmpty |> not)
 
-        if not found then
+        if not isSet then
             match nodes with
             | x :: _ ->
                 x.AppendChild (createNodeSet "AutoGenerateBindingRedirects" "true" project) |> ignore
+                save false project
             | _ -> ()
-
-        save false project
 
 type PackProcessCache =
     { ReferencesByProjectFilePath : ConcurrentDictionary<string, ProjectFile list>
@@ -1840,7 +1838,7 @@ type ProjectFile with
 
     member this.GetAssemblyName () = ProjectFile.getAssemblyName this
 
-    member this.SetOrCreateAutoGenerateBindingRedirects() = ProjectFile.setOrCreateAutoGenerateBindingRedirects this
+    member this.AddAutoGenerateBindingRedirects() = ProjectFile.addAutoGenerateBindingRedirects this
 
     static member LoadFromStream(fullName:string, stream:Stream) = ProjectFile.loadFromStream fullName stream
 
