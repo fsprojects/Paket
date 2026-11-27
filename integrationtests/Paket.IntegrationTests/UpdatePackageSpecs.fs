@@ -158,6 +158,24 @@ let ``#2572 should tell about late resolver issue``() =
     | exn when exn.Message.Contains("xunit.core 2.3.0-beta3-build3705 requested package xunit.extensibility.core: 2.3.0-beta3-build3705") ->
         ()
 
+[<Test>]
+let ``#4230 update transitive dependency with --transitive without direct dependency update``() =
+    use __ = paket "update --transitive --version 4.0.0 Castle.Core" "i004230-update-transitive" |> fst
+    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i004230-update-transitive","paket.lock"))
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Windsor"].Version
+    |> shouldEqual (SemVer.Parse "2.5.1")
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Core"].Version
+    |> shouldEqual (SemVer.Parse "4.0.0")
+
+[<Test>]
+let ``#4230 update transitive dependency with --transitive requiring direct dependency update``() =
+    use __ = paket "update --transitive --version 4.0.0 Castle.Core" "i004230-update-transitive-direct-update" |> fst
+    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i004230-update-transitive-direct-update","paket.lock"))
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Windsor"].Version
+    |> shouldEqual (SemVer.Parse "4.0.0")
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Core"].Version
+    |> shouldEqual (SemVer.Parse "4.0.0")
+
 
 #if INTERACTIVE
 ;;

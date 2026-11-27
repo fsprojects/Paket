@@ -265,6 +265,7 @@ type UpdateArgs =
     | [<Unique>] Keep_Patch
     | [<Unique>] Filter
     | [<Unique>] Touch_Affected_Refs
+    | [<Unique>] Transitive
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -281,6 +282,7 @@ with
             | Keep_Minor -> "only allow updates that preserve the minor version"
             | Keep_Patch -> "only allow updates that preserve the patch version"
             | Touch_Affected_Refs -> "touch project files referencing affected dependencies to help incremental build tools detecting the change"
+            | Transitive -> "allow updating a package not listed in paket.dependencies"
             | Filter -> "treat the NuGet package ID as a regex to filter packages"
 
 type FindPackagesArgs =

@@ -345,11 +345,11 @@ type Dependencies(dependenciesFileName: string) =
                                                       NoInstall = installAfter |> not }))
 
     /// Updates the given package.
-    member this.UpdatePackage(groupName, package: string, version: string option, force: bool, semVerUpdateMode, touchAffectedRefs): unit =
-        this.UpdatePackage(groupName, package, version, force, false, false, false, true, semVerUpdateMode, touchAffectedRefs)
+    member this.UpdatePackage(groupName, package: string, version: string option, force: bool, semVerUpdateMode, touchAffectedRefs, transitive): unit =
+        this.UpdatePackage(groupName, package, version, force, false, false, false, true, semVerUpdateMode, touchAffectedRefs, transitive)
 
     /// Updates the given package.
-    member this.UpdatePackage(groupName: string option, package: string, version: string option, force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
+    member this.UpdatePackage(groupName: string option, package: string, version: string option, force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs, transitive): unit =
         let groupName =
             match groupName with
             | None -> Constants.MainDependencyGroup
@@ -358,7 +358,7 @@ type Dependencies(dependenciesFileName: string) =
 
         RunInLockedAccessMode(
             Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
-            fun () -> UpdateProcess.UpdatePackage(dependenciesFileName, groupName, PackageName package, version,
+            fun () -> UpdateProcess.UpdatePackage(dependenciesFileName, groupName, PackageName package, version, transitive,
                                                   { UpdaterOptions.Default with
                                                       Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None)
                                                       NoInstall = installAfter |> not }))
