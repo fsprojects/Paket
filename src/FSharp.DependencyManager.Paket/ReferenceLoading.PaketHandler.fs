@@ -639,6 +639,15 @@ module Logic =
           [| userProfile; ".paket"; executable |] ]
         |> List.choose (fun parts -> try Some(System.IO.Path.Combine parts) with _ -> None)
 
+    /// Why the local tool doesn't run, which the warnings and errors of a paket that runs in its place repeat, as
+    /// it may be another version: that it isn't restored when localTool, the manifest that declares paket, says
+    /// so, or else invalidManifest, that the lookup reached a manifest that dotnet refuses, which may have
+    /// declared paket
+    let localToolProblem (invalidManifest: string option) (localTool: (string * Result<string * bool, string>) option) =
+        match localTool with
+        | Some (_, Error notRestored) -> Some notRestored
+        | _ -> invalidManifest
+
     /// The error when #r "paket:" finds no Paket: the message of why the local tool doesn't run, that it isn't
     /// restored when the manifest declares paket, or that the lookup reached a manifest that dotnet refuses, or
     /// else that Paket wasn't found, with the locations looked in, if any. There is none without a user profile,
@@ -684,10 +693,8 @@ module Logic =
             (globalTool: unit -> string option)
             (restoredTool: unit -> string option) =
         let insteadOfLocalTool (paket: string) =
-            match localTool with
-            | Some (_, Error notRestored) -> Some notRestored
-            | _ -> invalidManifest
-            |> Option.iter (fun localToolProblem -> warn $"%s{localToolProblem} Running %s{paket} instead, which may be another version.")
+            localToolProblem invalidManifest localTool
+            |> Option.iter (fun problem -> warn $"%s{problem} Running %s{paket} instead, which may be another version.")
 
         match localTool, toolPathExe with
         | None, Some paketExe ->
@@ -1024,12 +1031,14 @@ module internal PaketHandler =
             // findLocalTool gives the FullName that paketFolders below asks nugetPackages for, which runs once for both
             let scriptFolder = DirectoryInfo scriptDir
             // the manifest that declares paket, or the message that the lookup reached a manifest that dotnet refuses
-            let foundLocalTool = findLocalTool scriptFolder
-            let invalidManifest = match foundLocalTool with Error invalidManifest -> Some invalidManifest | Ok _ -> None
+            let foundLocalTool, invalidManifest =
+                match findLocalTool scriptFolder with
+                | Ok foundLocalTool -> foundLocalTool, None
+                | Error invalidManifest -> None, Some invalidManifest
             // the manifest that declares paket, with the paket.dll of its local tool and the rollForward of the
             // manifest, or else the message that it isn't restored
             let localTool =
-                (match foundLocalTool with Ok localTool -> localTool | Error _ -> None)
+                foundLocalTool
                 |> Option.map (fun (manifest, paket, manifestFolder) ->
                     let version = paket.NormalizedVersion
                     // where `dotnet tool restore` restores it when run in the folder of the manifest, or where it was
@@ -1054,10 +1063,9 @@ module internal PaketHandler =
                             | folders -> " in " + (folders |> List.map (fun folder -> $"'%s{folder}'") |> String.concat " or ")
                         Error $"Paket %s{paket.Version}, the local tool of '%s{manifest}', is not restored%s{notRestoredIn}. Please run 'dotnet tool restore' in '%s{manifestFolder}'.")
 
-            // the message that the local tool isn't restored, or that the lookup reached a manifest that dotnet
-            // refuses, which the errors of a paket that runs in its place repeat: it may be another version, which
+            // the errors of a paket that runs in place of the local tool repeat why: it may be another version, which
             // only a warning told
-            let localToolProblem = match localTool with Some (_, Error notRestored) -> Some notRestored | _ -> invalidManifest
+            let localToolProblem = Internals.Logic.localToolProblem invalidManifest localTool
             let withLocalToolHint (message: string) =
                 match localToolProblem with
                 | Some localToolProblem -> message + Environment.NewLine + localToolProblem
