@@ -1099,6 +1099,17 @@ module ProjectFile =
             | true,  version -> adjustIfWeHaveSDK version
             | _         -> adjustIfWeHaveSDK 4.0
 
+    /// The target profile of a framework that the project file declares, or None when Paket doesn't
+    /// recognize it.
+    let private tryParseDeclaredTargetProfile (framework:string) =
+        // a property defined outside of the project file, as in $(DefaultTargetFramework), expands
+        // to an empty string, which internalExtract would take for .NET Framework 1.0
+        if String.IsNullOrWhiteSpace framework then None
+        else
+            match FrameworkDetection.internalExtract framework with
+            | None | Some (Unsupported _) -> None
+            | Some framework -> Some (TargetProfile.SinglePlatform framework)
+
     /// The target profiles that the project file declares itself. Paket doesn't read the files that
     /// it imports, so this is empty when the framework comes from one of them, as from
     /// Directory.Build.props, or when the file declares no framework that Paket recognizes.
@@ -1117,12 +1128,7 @@ module ProjectFile =
 
                 | Some x -> [prefix() + (x.Replace("v",""))]
 
-            frameworks
-            // a property defined outside of the project file, as in $(DefaultTargetFramework), expands
-            // to an empty string, which internalExtract would take for .NET Framework 1.0
-            |> List.filter (String.IsNullOrWhiteSpace >> not)
-            |> List.choose (fun s -> FrameworkDetection.internalExtract s |> Option.map TargetProfile.SinglePlatform)
-            |> List.filter (fun x -> match x with TargetProfile.SinglePlatform(Unsupported _) -> false | _ -> true)
+            frameworks |> List.choose tryParseDeclaredTargetProfile
 
 
         match getTargetFrameworkProfile project with
