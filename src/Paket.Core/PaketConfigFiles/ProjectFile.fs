@@ -1062,12 +1062,10 @@ module ProjectFile =
     let getTargetFramework (project:ProjectFile) = getProperty "TargetFramework" project
     let getTargetFrameworks (project:ProjectFile) = getProperty "TargetFrameworks" project
     let getTargetFrameworksParsed (project:ProjectFile) =
+        // without the blank entries that a property defined outside of the project file leaves
         getTargetFrameworks project
-        |> Option.map (fun x -> x.Split([|';'|],StringSplitOptions.RemoveEmptyEntries))
-        |> Option.toArray
-        |> Array.concat
-        |> Array.map (fun x -> x.Trim())
-        |> Array.toList
+        |> Option.map (fun x -> x.Split(';', StringSplitOptions.TrimEntries ||| StringSplitOptions.RemoveEmptyEntries) |> List.ofArray)
+        |> Option.defaultValue []
 
     let getToolsVersion (project:ProjectFile) =
         let adjustIfWeHaveSDK v =

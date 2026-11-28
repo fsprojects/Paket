@@ -70,7 +70,7 @@ let ``declares no target profile when the framework is a property defined outsid
 
 [<Test>]
 let ``ignores an empty entry of TargetFrameworks`` () =
-    // the space after the last separator survives the split, and becomes "" once trimmed
+    // the entry after the last separator is blank
     let p = sdkProject "<TargetFrameworks>net8.0; </TargetFrameworks>"
     p.GetDeclaredTargetProfiles() |> shouldEqual [TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V8)]
 

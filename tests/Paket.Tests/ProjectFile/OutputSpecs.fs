@@ -334,6 +334,7 @@ let ``should append each target framework as the SDK names it to the output path
     |> shouldEqual [ for framework in frameworks.Split ';' -> System.IO.Path.Combine("build", "Debug", framework.ToLowerInvariant()) |> normalizePath ]
 
 // paket pack reads the assembly of a project in the output folder of its first framework
+[<TestCase("<TargetFrameworks>$(ExtraTargetFramework) ;net8.0</TargetFrameworks>", "net8.0")>]
 [<TestCase("<TargetFramework>NET472</TargetFramework>", "net472")>]
 let ``should detect output path of the first target framework of a netsdk project`` (properties:string) (folder:string) =
     (sdkProject properties).GetOutputDirectory "Debug" "" None
