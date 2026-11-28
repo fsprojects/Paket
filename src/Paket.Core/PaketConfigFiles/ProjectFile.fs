@@ -1642,8 +1642,10 @@ module ProjectFile =
         let targetFramework =
             let frameworks =
                 match getTargetFramework project with
-                | Some x -> [x]
-                | None -> getTargetFrameworksParsed project
+                // an empty TargetFramework, as to clear the one of Directory.Build.props, leaves the
+                // frameworks to TargetFrameworks, as in the SDK
+                | Some x when not (String.IsNullOrWhiteSpace x) -> [x]
+                | _ -> getTargetFrameworksParsed project
             let framework =
                 match targetProfile with
                 | Some targetProfile ->

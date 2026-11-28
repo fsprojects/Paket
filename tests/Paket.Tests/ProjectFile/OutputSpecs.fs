@@ -319,6 +319,12 @@ let ``should detect output path of each target framework of a netsdk project as 
     outputDirectoriesOfSdkProject (sprintf "<%s>%s</%s>" property frameworks property)
     |> shouldEqual [ for framework in frameworks.Split ';' -> System.IO.Path.Combine("bin", "Debug", framework.ToLowerInvariant()) |> normalizePath ]
 
+[<TestCase("")>]
+[<TestCase("$(UndefinedTargetFramework)")>]
+let ``should detect output path of each target framework of a netsdk project that clears TargetFramework`` (targetFramework:string) =
+    outputDirectoriesOfSdkProject (sprintf "<TargetFramework>%s</TargetFramework><TargetFrameworks>net472;net8.0</TargetFrameworks>" targetFramework)
+    |> shouldEqual [ for framework in ["net472"; "net8.0"] -> System.IO.Path.Combine("bin", "Debug", framework) |> normalizePath ]
+
 [<TestCase("portable-net45+win8+wpa81", "Profile111")>]
 [<TestCase("Portable-Net45+Win8+WPA81", "Profile111")>]
 [<TestCase("portable-net45+win8+wpa81+wp8", "Profile259")>]
@@ -336,6 +342,7 @@ let ``should append each target framework as the SDK names it to the output path
 // paket pack reads the assembly of a project in the output folder of its first framework
 [<TestCase("<TargetFrameworks>$(ExtraTargetFramework) ;net8.0</TargetFrameworks>", "net8.0")>]
 [<TestCase("<TargetFramework>NET472</TargetFramework>", "net472")>]
+[<TestCase("<TargetFramework></TargetFramework><TargetFrameworks>net472;net8.0</TargetFrameworks>", "net472")>]
 let ``should detect output path of the first target framework of a netsdk project`` (properties:string) (folder:string) =
     (sdkProject properties).GetOutputDirectory "Debug" "" None
     |> shouldEqual (System.IO.Path.Combine("bin", "Debug", folder) |> normalizePath)
