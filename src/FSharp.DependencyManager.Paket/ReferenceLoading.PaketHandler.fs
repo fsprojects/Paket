@@ -219,7 +219,9 @@ module Logic =
     /// "paket", in any case, as dotnet compares the IDs. An Error tells why it refuses a manifest, as dotnet
     /// does: one that isn't JSON, with comments or trailing commas, that isn't a JSON object, without "isRoot"
     /// true or false, with "tools" that isn't an object, or whose paket tool has no version or one that NuGet
-    /// refuses. Unlike dotnet, it doesn't check the rest: it reads a manifest that dotnet refuses for another tool.
+    /// refuses. Unlike dotnet, it doesn't check the rest: it reads a manifest that dotnet refuses for the "version"
+    /// of the manifest, for another tool, or for the "commands" of the paket tool or a "rollForward" that isn't
+    /// true or false, taken as false.
     let paketOfToolManifest (content: string) =
         match parseJson content with
         | Some (JsonObject manifest) ->

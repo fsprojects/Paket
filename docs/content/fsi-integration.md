@@ -28,7 +28,9 @@ tool has no version or one that NuGet refuses. It warns and runs the Paket that 
 runs without a manifest that declares Paket, which may be another version, and fails
 with the reason only when it finds none. As when the local tool isn't restored, the
 error of that Paket repeats the reason, and its result isn't kept. It doesn't check
-the rest: it still reads a manifest that dotnet refuses for another tool.
+the rest: it still reads a manifest that dotnet refuses for the `version` of the
+manifest, for another tool, or for the `commands` of the Paket tool or a `rollForward`
+that isn't `true` or `false`, which it takes as `false`.
 
 When the local tool isn't restored, a Paket installed with `--tool-path` is still
 skipped: `#r "paket:"` warns and runs a global tool instead, or else the most recent
