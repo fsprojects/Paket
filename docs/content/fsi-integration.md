@@ -9,14 +9,28 @@ FSharp.DependencyManager.Paket implements this extension mechanism to hook same 
 The extension runs the Paket .NET tool. It looks for, in order:
 
 * the local tool of the first `.config/dotnet-tools.json` or `dotnet-tools.json`
-  up from the script that has Paket, without looking above an `isRoot` one (run
+  up from the script that has Paket, without looking above an `isRoot` one, nor,
+  as dotnet, at the root of a drive on Windows unless `DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT`
+  is `true` or `1`, and elsewhere when it is set to another value (run
   `dotnet tool restore` first, in the folder that has `.config/dotnet-tools.json`
   or `dotnet-tools.json`),
 * Paket installed with `dotnet tool install paket --tool-path`, in the folder
-  hierarchy containing the script, directly or in a `.paket` folder; it is
-  skipped with a warning when such a manifest declares Paket,
+  hierarchy containing the script, directly or in a `.paket` folder, but at the
+  root of a drive only where a manifest is read there; it is skipped with a
+  warning when such a manifest declares Paket,
 * a global tool, in `~/.dotnet/tools` or `~/.paket`,
 * the most recent Paket .NET tool restored in the NuGet packages folder.
+
+As dotnet, it doesn't look for a local tool in or above a tool manifest that isn't
+JSON, which allows no comment or trailing comma, that isn't a JSON object, that has
+no `isRoot` set to `true` or `false`, whose `tools` isn't an object, or whose Paket
+tool has no version or one that NuGet refuses. It warns and runs the Paket that it
+runs without a manifest that declares Paket, which may be another version, and fails
+with the reason only when it finds none. As when the local tool isn't restored, the
+error of that Paket repeats the reason, and its result isn't kept. It doesn't check
+the rest: it still reads a manifest that dotnet refuses for the `version` of the
+manifest, for another tool, or for the `commands` of the Paket tool or a `rollForward`
+that isn't `true` or `false`, which it takes as `false`.
 
 When the local tool isn't restored, a Paket installed with `--tool-path` is still
 skipped: `#r "paket:"` warns and runs a global tool instead, or else the most recent
