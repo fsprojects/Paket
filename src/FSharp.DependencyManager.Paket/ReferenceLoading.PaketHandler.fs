@@ -260,6 +260,20 @@ module Logic =
             | Some (_, manifest, Error reason) -> Error $"The tool manifest '%s{manifest}' is invalid: %s{reason}."
             | _ -> Ok None
 
+    /// Whether dotnet reads a tool manifest in the root folder of a drive, as the SDK decides it: when
+    /// DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT is set, only when it is true, in any case, or 1, and else
+    /// everywhere but on Windows, where any user can create a folder there
+    let allowsManifestInRoot (isWindows: bool) (allowManifestInRoot: string) =
+        if System.String.IsNullOrWhiteSpace allowManifestInRoot then not isWindows
+        else System.String.Equals(allowManifestInRoot, "true", System.StringComparison.OrdinalIgnoreCase) || allowManifestInRoot = "1"
+
+    /// A folder and its parents, in that order, up to the root folder of its drive, which is left out unless
+    /// withRoot
+    let folderAndParents (withRoot: bool) (folder: System.IO.DirectoryInfo) =
+        folder
+        |> Seq.unfold (fun folder -> if isNull folder then None else Some (folder, folder.Parent))
+        |> Seq.filter (fun folder -> withRoot || not (isNull folder.Parent))
+
     /// Where to look for dotnet, in order: the host that runs the script (DOTNET_HOST_PATH, the
     /// running process when it is dotnet, the root of the running runtime), then DOTNET_ROOT, the
     /// PATH and the default install folders. A relative path, which would depend on the current
@@ -728,32 +742,25 @@ module internal PaketHandler =
         sprintf "install --generate-load-scripts --load-script-type %s --load-script-framework %s project-root \"%s\""
             scriptType packageManagerTargetFramework (System.IO.Path.GetFullPath projectRootDirArgument)
 
-    let getDirectoryAndAllParentDirectories (directory: DirectoryInfo) =
-        let rec allParents (directory: DirectoryInfo) =
-            seq {
-                match directory.Parent with
-                | null -> ()
-                | parent -> 
-                    yield parent
-                    yield! allParents parent
-            }
-
-        seq {
-            yield directory
-            yield! allParents directory
-        }
-
     let isWindows =
         System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)
 
     /// The executable `dotnet tool install paket --tool-path` writes
     let toolPathExecutable = if isWindows then "paket.exe" else "paket"
 
+    /// The folders that a tool manifest or a Paket installed with --tool-path is looked for in: the folder of
+    /// the script and its parents, without the root folder of a drive where dotnet doesn't read a manifest,
+    /// as on Windows, where any user can create a folder there
+    let lookupFolders (baseDir: DirectoryInfo) =
+        let withRoot =
+            Internals.Logic.allowsManifestInRoot isWindows (Environment.GetEnvironmentVariable "DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT")
+        Internals.Logic.folderAndParents withRoot baseDir
+
     /// Walks up directory structure and tries to find paket installed with --tool-path
     let findPaketExe (prioritizedSearchPaths: string seq) (baseDir: DirectoryInfo) =
         let dirs = [
             yield! Seq.map DirectoryInfo prioritizedSearchPaths
-            yield! getDirectoryAndAllParentDirectories baseDir
+            yield! lookupFolders baseDir
         ]
 
         // for each given directory, we look for paket and .paket/paket
@@ -782,9 +789,10 @@ module internal PaketHandler =
     /// The first tool manifest up from the directory that has paket, with the paket tool it declares and
     /// the folder that the manifest is for: the one of dotnet-tools.json or of its .config folder,
     /// where `dotnet tool restore` is run. As dotnet, it doesn't look above an "isRoot" manifest, nor
-    /// above one that it refuses, which gives the Error that tells why.
+    /// above one that it refuses, which gives the Error that tells why, and skips the root folder of a
+    /// drive where it doesn't read a manifest.
     let findLocalTool (baseDir: DirectoryInfo) =
-        getDirectoryAndAllParentDirectories baseDir
+        lookupFolders baseDir
         |> Seq.collect (fun dir ->
             [ dir.FullName, Path.Combine(dir.FullName, ".config", "dotnet-tools.json")
               dir.FullName, Path.Combine(dir.FullName, "dotnet-tools.json") ])

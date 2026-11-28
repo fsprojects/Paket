@@ -237,6 +237,38 @@ module FsiExtension =
             let manifest = """{ "version": 1, "isRoot": false, "tools": { "paket": { "version": "VERSION", "commands": [ "paket" ] } } }""".Replace("VERSION", json)
             Assert.AreEqual(Some $"the version '%s{version}' of paket isn't a NuGet version", refusalOf manifest, manifest)
 
+    [<Test>]
+    let ``a tool manifest at the root of a drive is allowed as DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT tells dotnet`` () =
+        let allows = ReferenceLoading.Internals.Logic.allowsManifestInRoot
+        // not on Windows, where any user can create a folder there, unless DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT says so
+        Assert.IsFalse(allows true null)
+        Assert.IsFalse(allows true " ")
+        Assert.IsTrue(allows true "True")
+        Assert.IsTrue(allows true "1")
+        Assert.IsFalse(allows true "yes")
+        Assert.IsFalse(allows true " true")
+        // elsewhere, unless it says otherwise; white space says nothing
+        Assert.IsTrue(allows false null)
+        Assert.IsTrue(allows false " ")
+        Assert.IsTrue(allows false "true")
+        Assert.IsFalse(allows false "false")
+        Assert.IsFalse(allows false "0")
+
+    [<Test>]
+    let ``the lookup goes up from a folder to the root of its drive, which is left out unless withRoot`` () =
+        // where the manifests and a Paket installed with --tool-path are looked for
+        let driveRoot = System.IO.Path.GetPathRoot(System.IO.Path.GetTempPath())
+        let repo = System.IO.Path.Combine(driveRoot, "repo")
+        let scripts = System.IO.Path.Combine(repo, "scripts")
+        let folders withRoot (folder: string) =
+            ReferenceLoading.Internals.Logic.folderAndParents withRoot (System.IO.DirectoryInfo folder)
+            |> Seq.map (fun folder -> folder.FullName)
+            |> List.ofSeq
+        Assert.AreEqual([ scripts; repo; driveRoot ], folders true scripts)
+        Assert.AreEqual([ scripts; repo ], folders false scripts)
+        Assert.AreEqual([ driveRoot ], folders true driveRoot)
+        Assert.AreEqual(List.empty<string>, folders false driveRoot)
+
     /// The tool manifest that declares paket, with its paket tool and its folder, or why the lookup stopped at an
     /// invalid manifest
     type FoundLocalTool = Result<(string * ReferenceLoading.Internals.Logic.ManifestPaket * string) option, string>
