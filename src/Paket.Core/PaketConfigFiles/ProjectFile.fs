@@ -1642,23 +1642,30 @@ module ProjectFile =
 
     let getOutputDirectory buildConfiguration buildPlatform (targetProfile : TargetProfile option) (project:ProjectFile) =
         let targetFramework =
-            match targetProfile with
-            | Some targetProfile ->
-                let targetProfile = targetProfile.ToString()
+            let frameworks =
                 match getTargetFramework project with
-                | Some x -> if x = targetProfile then x else ""
-                | None ->
-                    let parsedTargetFrameworks = getTargetFrameworksParsed project
-                    match List.tryFind ((=) targetProfile) parsedTargetFrameworks with
-                    | Some x -> x
-                    | None -> ""
-            | None ->
-                match getTargetFramework project with
-                | Some x -> x
-                | None ->
-                    match getTargetFrameworksParsed project with
-                    | fwk :: _ -> fwk
-                    | [] -> ""
+                | Some x -> [x]
+                | None -> getTargetFrameworksParsed project
+            let framework =
+                match targetProfile with
+                | Some targetProfile ->
+                    // the SDK names the folder after the framework that the project writes, which can
+                    // differ from the name of the target profile: net8.0-windows is net8.0-windows7.0
+                    let isTargetProfile framework =
+                        match targetProfile with
+                        // a portable profile comes from TargetFrameworkProfile: the platforms of the
+                        // framework can come in any order and case, as portable-net45+win8+wpa81+wp8
+                        // for portable-net45+win8+wp8+wpa81
+                        | TargetProfile.PortableProfile _ ->
+                            PlatformMatching.extractPlatforms false framework
+                            |> Option.bind (fun platforms -> platforms.ToTargetProfile false) = Some targetProfile
+                        | TargetProfile.SinglePlatform _ -> tryParseDeclaredTargetProfile framework = Some targetProfile
+                    List.tryFind isTargetProfile frameworks
+                | None -> List.tryHead frameworks
+            defaultArg framework ""
+        // the SDK appends $(TargetFramework.ToLowerInvariant()) to the output path: NET472 builds to
+        // bin/Debug/net472, while $(TargetFramework) keeps the case of the project
+        let frameworkFolder = targetFramework.ToLowerInvariant()
 
         let platforms =
             if not (String.IsNullOrWhiteSpace buildPlatform) then
@@ -1678,7 +1685,7 @@ module ProjectFile =
                 if not (appendTargetFrameworkToOutputPath project) then
                     Path.Combine("bin", buildConfiguration)
                 elif not (String.IsNullOrEmpty targetFramework) then
-                    Path.Combine("bin", buildConfiguration, targetFramework)
+                    Path.Combine("bin", buildConfiguration, frameworkFolder)
                 elif String.IsNullOrWhiteSpace buildPlatform then
                     failwithf "Unable to find %s output path node in file %s for any known platforms" buildConfiguration project.FileName
                 else
@@ -1694,7 +1701,7 @@ module ProjectFile =
                             let tested = String.Join(", ", attempted)
                             traceWarnfn "No platform specified; found output path node for the %s platform after failing to find one for the following: %s" x tested
                         if (appendTargetFrameworkToOutputPath project) then
-                            Path.Combine(s.TrimEnd [|'\\'|] , targetFramework) |> normalizePath
+                            Path.Combine(s.TrimEnd [|'\\'|] , frameworkFolder) |> normalizePath
                         else
                             s.TrimEnd [|'\\'|] |> normalizePath
 

@@ -295,3 +295,46 @@ let ``should remove missing files that exist in the project`` () =
          "ProviderEntryPoint.fs"
         ]
     CollectionAssert.AreEqual(expected, actual)
+
+let private sdkProject (properties:string) =
+    let content =
+        sprintf """<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    %s
+  </PropertyGroup>
+</Project>""" properties
+    ProjectFile.LoadFromString("Project.csproj", content)
+
+let private outputDirectoriesOfSdkProject (properties:string) =
+    let projectFile = sdkProject properties
+    projectFile.GetTargetProfiles()
+    |> List.map (fun profile -> projectFile.GetOutputDirectory "Debug" "" (Some profile))
+
+[<TestCase("TargetFramework", "net8.0-windows")>]
+[<TestCase("TargetFrameworks", "net472;net8.0-windows")>]
+[<TestCase("TargetFrameworks", "net472;net11.0-windows")>]
+[<TestCase("TargetFrameworks", "net8.0-windows10.0.19041")>]
+[<TestCase("TargetFrameworks", "NET472;net11.0")>]
+let ``should detect output path of each target framework of a netsdk project as the SDK names it`` (property:string) (frameworks:string) =
+    outputDirectoriesOfSdkProject (sprintf "<%s>%s</%s>" property frameworks property)
+    |> shouldEqual [ for framework in frameworks.Split ';' -> System.IO.Path.Combine("bin", "Debug", framework.ToLowerInvariant()) |> normalizePath ]
+
+[<TestCase("portable-net45+win8+wpa81", "Profile111")>]
+[<TestCase("Portable-Net45+Win8+WPA81", "Profile111")>]
+[<TestCase("portable-net45+win8+wpa81+wp8", "Profile259")>]
+let ``should detect output path of a portable netsdk project`` (targetFramework:string) (profile:string) =
+    outputDirectoriesOfSdkProject (sprintf "<TargetFramework>%s</TargetFramework><TargetFrameworkProfile>%s</TargetFrameworkProfile>" targetFramework profile)
+    |> shouldEqual [ System.IO.Path.Combine("bin", "Debug", targetFramework.ToLowerInvariant()) |> normalizePath ]
+
+[<TestCase("TargetFramework", "net8.0-windows")>]
+[<TestCase("TargetFrameworks", "net472;net8.0-windows")>]
+[<TestCase("TargetFrameworks", "NET472;net8.0")>]
+let ``should append each target framework as the SDK names it to the output path of a netsdk project`` (property:string) (frameworks:string) =
+    outputDirectoriesOfSdkProject (sprintf "<%s>%s</%s><OutputPath>build\\$(Configuration)\\</OutputPath>" property frameworks property)
+    |> shouldEqual [ for framework in frameworks.Split ';' -> System.IO.Path.Combine("build", "Debug", framework.ToLowerInvariant()) |> normalizePath ]
+
+// paket pack reads the assembly of a project in the output folder of its first framework
+[<TestCase("<TargetFramework>NET472</TargetFramework>", "net472")>]
+let ``should detect output path of the first target framework of a netsdk project`` (properties:string) (folder:string) =
+    (sdkProject properties).GetOutputDirectory "Debug" "" None
+    |> shouldEqual (System.IO.Path.Combine("bin", "Debug", folder) |> normalizePath)
