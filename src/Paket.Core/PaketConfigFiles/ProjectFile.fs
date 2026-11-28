@@ -1062,12 +1062,10 @@ module ProjectFile =
     let getTargetFramework (project:ProjectFile) = getProperty "TargetFramework" project
     let getTargetFrameworks (project:ProjectFile) = getProperty "TargetFrameworks" project
     let getTargetFrameworksParsed (project:ProjectFile) =
+        // without the blank entries that a property defined outside of the project file leaves
         getTargetFrameworks project
-        |> Option.map (fun x -> x.Split([|';'|],StringSplitOptions.RemoveEmptyEntries))
-        |> Option.toArray
-        |> Array.concat
-        |> Array.map (fun x -> x.Trim())
-        |> Array.toList
+        |> Option.map (fun x -> x.Split(';', StringSplitOptions.TrimEntries ||| StringSplitOptions.RemoveEmptyEntries) |> List.ofArray)
+        |> Option.defaultValue []
 
     let getToolsVersion (project:ProjectFile) =
         let adjustIfWeHaveSDK v =
@@ -1099,6 +1097,17 @@ module ProjectFile =
             | true,  version -> adjustIfWeHaveSDK version
             | _         -> adjustIfWeHaveSDK 4.0
 
+    /// The target profile of a framework that the project file declares, or None when Paket doesn't
+    /// recognize it.
+    let private tryParseDeclaredTargetProfile (framework:string) =
+        // a property defined outside of the project file, as in $(DefaultTargetFramework), expands
+        // to an empty string, which internalExtract would take for .NET Framework 1.0
+        if String.IsNullOrWhiteSpace framework then None
+        else
+            match FrameworkDetection.internalExtract framework with
+            | None | Some (Unsupported _) -> None
+            | Some framework -> Some (TargetProfile.SinglePlatform framework)
+
     /// The target profiles that the project file declares itself. Paket doesn't read the files that
     /// it imports, so this is empty when the framework comes from one of them, as from
     /// Directory.Build.props, or when the file declares no framework that Paket recognizes.
@@ -1117,12 +1126,7 @@ module ProjectFile =
 
                 | Some x -> [prefix() + (x.Replace("v",""))]
 
-            frameworks
-            // a property defined outside of the project file, as in $(DefaultTargetFramework), expands
-            // to an empty string, which internalExtract would take for .NET Framework 1.0
-            |> List.filter (String.IsNullOrWhiteSpace >> not)
-            |> List.choose (fun s -> FrameworkDetection.internalExtract s |> Option.map TargetProfile.SinglePlatform)
-            |> List.filter (fun x -> match x with TargetProfile.SinglePlatform(Unsupported _) -> false | _ -> true)
+            frameworks |> List.choose tryParseDeclaredTargetProfile
 
 
         match getTargetFrameworkProfile project with
@@ -1636,23 +1640,32 @@ module ProjectFile =
 
     let getOutputDirectory buildConfiguration buildPlatform (targetProfile : TargetProfile option) (project:ProjectFile) =
         let targetFramework =
-            match targetProfile with
-            | Some targetProfile ->
-                let targetProfile = targetProfile.ToString()
+            let frameworks =
                 match getTargetFramework project with
-                | Some x -> if x = targetProfile then x else ""
-                | None ->
-                    let parsedTargetFrameworks = getTargetFrameworksParsed project
-                    match List.tryFind ((=) targetProfile) parsedTargetFrameworks with
-                    | Some x -> x
-                    | None -> ""
-            | None ->
-                match getTargetFramework project with
-                | Some x -> x
-                | None ->
-                    match getTargetFrameworksParsed project with
-                    | fwk :: _ -> fwk
-                    | [] -> ""
+                // an empty TargetFramework, as to clear the one of Directory.Build.props, leaves the
+                // frameworks to TargetFrameworks, as in the SDK
+                | Some x when not (String.IsNullOrWhiteSpace x) -> [x]
+                | _ -> getTargetFrameworksParsed project
+            let framework =
+                match targetProfile with
+                | Some targetProfile ->
+                    // the SDK names the folder after the framework that the project writes, which can
+                    // differ from the name of the target profile: net8.0-windows is net8.0-windows7.0
+                    let isTargetProfile framework =
+                        match targetProfile with
+                        // a portable profile comes from TargetFrameworkProfile: the platforms of the
+                        // framework can come in any order and case, as portable-net45+win8+wpa81+wp8
+                        // for portable-net45+win8+wp8+wpa81
+                        | TargetProfile.PortableProfile _ ->
+                            PlatformMatching.extractPlatforms false framework
+                            |> Option.bind (fun platforms -> platforms.ToTargetProfile false) = Some targetProfile
+                        | TargetProfile.SinglePlatform _ -> tryParseDeclaredTargetProfile framework = Some targetProfile
+                    List.tryFind isTargetProfile frameworks
+                | None -> List.tryHead frameworks
+            defaultArg framework ""
+        // the SDK appends $(TargetFramework.ToLowerInvariant()) to the output path: NET472 builds to
+        // bin/Debug/net472, while $(TargetFramework) keeps the case of the project
+        let frameworkFolder = targetFramework.ToLowerInvariant()
 
         let platforms =
             if not (String.IsNullOrWhiteSpace buildPlatform) then
@@ -1672,7 +1685,7 @@ module ProjectFile =
                 if not (appendTargetFrameworkToOutputPath project) then
                     Path.Combine("bin", buildConfiguration)
                 elif not (String.IsNullOrEmpty targetFramework) then
-                    Path.Combine("bin", buildConfiguration, targetFramework)
+                    Path.Combine("bin", buildConfiguration, frameworkFolder)
                 elif String.IsNullOrWhiteSpace buildPlatform then
                     failwithf "Unable to find %s output path node in file %s for any known platforms" buildConfiguration project.FileName
                 else
@@ -1688,7 +1701,7 @@ module ProjectFile =
                             let tested = String.Join(", ", attempted)
                             traceWarnfn "No platform specified; found output path node for the %s platform after failing to find one for the following: %s" x tested
                         if (appendTargetFrameworkToOutputPath project) then
-                            Path.Combine(s.TrimEnd [|'\\'|] , targetFramework) |> normalizePath
+                            Path.Combine(s.TrimEnd [|'\\'|] , frameworkFolder) |> normalizePath
                         else
                             s.TrimEnd [|'\\'|] |> normalizePath
 
